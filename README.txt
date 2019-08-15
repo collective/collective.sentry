@@ -23,3 +23,6 @@ Author
 ------
 
 ZOPYX/Andreas Jung, info@zopyx.com
+
+`collective.sentry` has been developed as part of a Plone 5.2 migration project and it
+sponsored by the University Gent.

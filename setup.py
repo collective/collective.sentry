@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '0.1.2'
+version = '0.1.3'
 
 long_description = (
     read('README.txt')
@@ -17,8 +17,6 @@ long_description = (
     + '\n' +
     read('CONTRIBUTORS.txt')
     )
-
-tests_require=['zope.testing']
 
 setup(name='collective.sentry',
       version=version,
@@ -51,9 +49,6 @@ setup(name='collective.sentry',
       install_requires=['setuptools',
                         'sentry-sdk'
                         ],
-      tests_require=tests_require,
-      extras_require=dict(tests=tests_require),
-      test_suite = 'collective.sentry.tests.test_docs.test_suite',
       entry_points="""
       # -*- Entry points -*-
       [z3c.autoinclude.plugin]
