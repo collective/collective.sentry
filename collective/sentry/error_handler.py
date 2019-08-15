@@ -19,6 +19,8 @@ sentry_dsn = os.environ.get("SENTRY_DSN")
 if not sentry_dsn:
     raise RuntimeError("Environment variable SENTRY_DSN not configured")
 
+sentry_project = os.environ.get("SENTRY_PROJECT")
+
 
 def _before_send(event, hint):
     """ Inject Plone/Zope specific information (based on raven.contrib.zope)  """
@@ -104,6 +106,9 @@ tags['instance_name'] = configuration.instancehome.rsplit(os.path.sep, 1)[-1]
 with sentry_sdk.configure_scope() as scope:
     for k, v in tags.items():
         scope.set_tag(k, v)
+    if sentry_project:
+        scope.set_tag("project", sentry_project)
+
 
 logging.info("Sentry integration enabled")
 
