@@ -78,6 +78,8 @@ def before_send(event, hint):
 
     return event
 
-
-
 sentry_sdk.init(sentry_dsn, max_breadcrumbs=50, before_send=before_send, debug=True)
+
+
+def dummy():
+    pass
