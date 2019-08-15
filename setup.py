@@ -15,8 +15,6 @@ long_description = (
     + '\n' +
     read('CHANGES.txt')
     + '\n' +
-    read('ugent', 'policy', 'README.txt')
-    + '\n' +
     read('CONTRIBUTORS.txt')
     )
 
