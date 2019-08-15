@@ -17,7 +17,12 @@ Add `collective.sentry` to your buildout and re-run buildout.
 Configuration
 -------------
 
-Configure the Sentry DSN by setting the environment variable `SENTRY_DSN`.
+Configure the Sentry DSN by setting the environment variable `SENTRY_DSN` inside your shell configuration or using buildout::
+
+    [instance]
+    environment-vars +=
+        SENTRY_DSN https://......
+
 
 Repository
 ----------
