@@ -19,6 +19,18 @@ Configuration
 
 Configure the Sentry DSN by setting the environment variable `SENTRY_DSN`.
 
+Repository
+----------
+
+https://github.com/collective/collective.sentry
+
+Licence
+-------
+
+- GPL2 - GNU Public License 2
+- based on `raven.contrib.zope`: BSD
+
+
 Author
 ------
 
