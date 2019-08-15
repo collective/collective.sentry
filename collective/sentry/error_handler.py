@@ -84,6 +84,7 @@ def before_send(event, hint):
 sentry_sdk.init(sentry_dsn, max_breadcrumbs=50, before_send=before_send, debug=True)
 
 
+# fake registration in order to import the file properly for the sentry_skd.init() call
 @adapter(IPubFailure)
 def dummy(event):
     pass
