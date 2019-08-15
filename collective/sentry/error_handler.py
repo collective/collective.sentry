@@ -6,9 +6,9 @@
 import os
 import logging
 import sentry_sdk
-from inspect import getouterframes, currentframe, getinnerframes
 
 from zope.component import adapter
+from zope.globalrequest import getRequest
 from AccessControl.users import nobody
 from ZPublisher.interfaces import IPubFailure
 from ZPublisher.HTTPRequest import _filterPasswordFields
@@ -20,25 +20,13 @@ if not sentry_dsn:
 
 
 def before_send(event, hint):
+    """ Inject Plone/Zope specific information (based on raven.contrib.zope)  """
 
     request = None
     exc_info = None
-    for frame_info in getouterframes(currentframe()):
-        frame = frame_info[0]
-        if not request:
-            request = frame.f_locals.get("request", None)
-            if not request:
-                view = frame.f_locals.get("self", None)
-                try:
-                    request = getattr(view, "request", None)
-                except RuntimeError:
-                    request = None
-        if not exc_info:
-            exc_info = frame.f_locals.get("exc_info", None)
-            if not hasattr(exc_info, "__getitem__"):
-                exc_info = None
-        if request and exc_info:
-            break
+
+
+    request = getRequest()
 
     if request:
 
@@ -104,6 +92,7 @@ def before_send(event, hint):
     return event
 
 sentry_sdk.init(sentry_dsn, max_breadcrumbs=50, before_send=before_send, debug=False)
+logging.info("Sentry integration enabled")
 
 
 # fake registration in order to import the file properly for the sentry_skd.init() call
