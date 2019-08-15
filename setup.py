@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-collective.sentry - Policy Package for http://www.ugent.be
+collective.sentry
 """
 import os
 from setuptools import setup, find_packages
@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '43.12.dev0'
+version = '0.1'
 
 long_description = (
     read('README.txt')
@@ -32,16 +32,15 @@ setup(name='collective.sentry',
         'License :: OSI Approved :: GNU General Public License (GPL)',
         ],
       keywords='policy',
-      author='UGent Portaalteam',
-      author_email='portaal@ugent.be',
-      url='https://trac.portaal.ugent.be/wiki/Packages/collective.sentry',
+      author='Andreas Jung'.
+      author_email='info@zopyx.com',
       license='GPL',
       packages=find_packages(exclude=['ez_setup']),
-      namespace_packages=['ugent', ],
+      namespace_packages=['collective', ],
       include_package_data=True,
       zip_safe=False,
       install_requires=['setuptools',
-                        'ugent.vocabularies'
+                        'sentry-sdk'
                         ],
       tests_require=tests_require,
       extras_require=dict(tests=tests_require),
