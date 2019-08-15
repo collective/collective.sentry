@@ -23,6 +23,15 @@ Configure the Sentry DSN by setting the environment variable `SENTRY_DSN` inside
     environment-vars +=
         SENTRY_DSN https://......
 
+Supplementary information logged in Sentry
+------------------------------------------
+
+`collective.sentry` will create automatically a Sentry tag `instance_name`
+which is derived from the buildout part name of the related instance.  An
+additional tag `project` can be configured (optional) if you set the
+environment variable `DSN_PROJECT`.  This allows you introduce an additional
+tag for filtering, if needed.
+
 
 Repository
 ----------
