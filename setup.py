@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '0.1.1'
+version = '0.1.2'
 
 long_description = (
     read('README.txt')
@@ -22,14 +22,22 @@ tests_require=['zope.testing']
 
 setup(name='collective.sentry',
       version=version,
-      description="Policy-package for the main portal-site of Ghent University",
+      description="Sentry integration with Plone 5.2/Zope 4",
       long_description=long_description,
       # Get more strings from http://www.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
-        'Framework :: Plone',
-        'Intended Audience :: Developers',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'License :: OSI Approved :: GNU General Public License (GPL)',
+        "Framework :: Plone",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "License :: OSI Approved :: GNU General Public License (GPL)",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Framework :: Plone",
+        "Framework :: Plone :: 5.1",
+        "Framework :: Plone :: 5.2",
+        "Framework :: Zope4",
+        "Topic :: Software Development :: Libraries :: Python Modules",
         ],
       keywords='policy',
       author='Andreas Jung',
