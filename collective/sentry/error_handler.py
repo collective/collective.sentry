@@ -59,7 +59,7 @@ def _before_send(event, hint):
     event["extra"]["cookies"] = {}
     event["extra"]["lazy items"] = {}
 
-    for k, v in _filterPasswordFields(request.items()):
+    for k, v in _filterPasswordFields(request.form.items()):
         event["extra"]["form"][k] = repr(v)
 
     for k, v in _filterPasswordFields(request.cookies.items()):
