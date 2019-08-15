@@ -1,5 +1,6 @@
 global-exclude *pyc
 include *.cfg *.rst *.in *.txt *.md 
 
+recursive exclude __pycache__  *.pyc
 recursive-include docs *
 recursive-include collective *
