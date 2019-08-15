@@ -6,8 +6,11 @@
 import os
 import logging
 import sentry_sdk
+from inspect import getouterframes, currentframe, getinnerframes
 
+from zope.component import adapter
 from AccessControl.users import nobody
+from ZPublisher.interfaces import IPubFailure
 
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -81,5 +84,6 @@ def before_send(event, hint):
 sentry_sdk.init(sentry_dsn, max_breadcrumbs=50, before_send=before_send, debug=True)
 
 
-def dummy():
+@adapter(IPubFailure)
+def dummy(event):
     pass
