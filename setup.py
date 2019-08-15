@@ -32,7 +32,7 @@ setup(name='collective.sentry',
         'License :: OSI Approved :: GNU General Public License (GPL)',
         ],
       keywords='policy',
-      author='Andreas Jung'.
+      author='Andreas Jung',
       author_email='info@zopyx.com',
       license='GPL',
       packages=find_packages(exclude=['ez_setup']),
