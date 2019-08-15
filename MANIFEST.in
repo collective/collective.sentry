@@ -1,0 +1,5 @@
+global-exclude *pyc
+include *.cfg *.rst *.in *.txt *.md 
+
+recursive-include docs *
+recursive-include collective *
