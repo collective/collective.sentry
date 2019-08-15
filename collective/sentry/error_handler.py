@@ -8,7 +8,6 @@ import logging
 import sentry_sdk
 
 from AccessControl.users import nobody
-from inspect import getouterframes, currentframe, getinnerframes
 
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
