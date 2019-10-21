@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.1.7 (unreleased)
+------------------
+- Make collective.sentry configuration optional (do not load if no **SENTRY_DSN**)
+  [kiorky]
 
 0.1 (2019/08/15)
 ----------------

@@ -16,10 +16,10 @@ from ZPublisher.HTTPRequest import _filterPasswordFields
 
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
-if not sentry_dsn:
-    raise RuntimeError("Environment variable SENTRY_DSN not configured")
 
 sentry_project = os.environ.get("SENTRY_PROJECT")
+
+is_sentry_optional = os.environ.get("SENTRY_OPTIONAL")
 
 
 def _before_send(event, hint):
@@ -97,20 +97,28 @@ def before_send(event, hint):
         logging.warn("Could not extract data from request", exc_info=True)
 
 
-sentry_sdk.init(sentry_dsn, max_breadcrumbs=50, before_send=before_send, debug=False)
+if not sentry_dsn:
+    msg = "Environment variable SENTRY_DSN not configured"
+    if is_sentry_optional:
+        logging.info(msg)
+    else:
+        raise RuntimeError(msg)
 
-configuration = getConfiguration()
-tags = {}
-tags['instance_name'] = configuration.instancehome.rsplit(os.path.sep, 1)[-1]
+if sentry_dsn:
+    sentry_sdk.init(sentry_dsn, max_breadcrumbs=50, before_send=before_send, debug=False)
 
-with sentry_sdk.configure_scope() as scope:
-    for k, v in tags.items():
-        scope.set_tag(k, v)
-    if sentry_project:
-        scope.set_tag("project", sentry_project)
+    configuration = getConfiguration()
+    tags = {}
+    tags['instance_name'] = configuration.instancehome.rsplit(os.path.sep, 1)[-1]
+
+    with sentry_sdk.configure_scope() as scope:
+        for k, v in tags.items():
+            scope.set_tag(k, v)
+        if sentry_project:
+            scope.set_tag("project", sentry_project)
 
 
-logging.info("Sentry integration enabled")
+    logging.info("Sentry integration enabled")
 
 
 # fake registration in order to import the file properly for the sentry_skd.init() call
