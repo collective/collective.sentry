@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.2.0 (unreleased)
+------------------
+- Add optional environment parameter to set max length of stacktrace ("SENTRY_MAX_LENGTH", default is 512)
+  [Thokas]
+
 0.1.7 (2019/10/21)
 ------------------
 - Make collective.sentry configuration optional (do not load if no **SENTRY_DSN**)
