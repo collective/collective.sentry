@@ -6,6 +6,7 @@
 import os
 import logging
 import sentry_sdk
+import sentry_sdk.utils as sentry_utils
 
 from App.config import getConfiguration
 from zope.component import adapter
@@ -14,16 +15,19 @@ from AccessControl.users import nobody
 from ZPublisher.interfaces import IPubFailure
 from ZPublisher.HTTPRequest import _filterPasswordFields
 
-
 sentry_dsn = os.environ.get("SENTRY_DSN")
 
 sentry_project = os.environ.get("SENTRY_PROJECT")
 
 is_sentry_optional = os.environ.get("SENTRY_OPTIONAL")
 
+sentry_max_length = os.environ.get("SENTRY_MAX_LENGTH")
+
 
 def _before_send(event, hint):
-    """ Inject Plone/Zope specific information (based on raven.contrib.zope)  """
+    """
+     Inject Plone/Zope specific information (based on raven.contrib.zope)
+    """
 
     request = getRequest()
     if not request:
@@ -73,7 +77,6 @@ def _before_send(event, hint):
             continue
         event["extra"]["other"][k] = repr(v)
 
-
     user = request.get("AUTHENTICATED_USER", None)
     if user is not None and user != nobody:
         user_dict = {
@@ -84,17 +87,14 @@ def _before_send(event, hint):
         user_dict = {}
     event["extra"]["user"] = user_dict
 
-    event["foo"] ="bar"
-
     return event
 
 
 def before_send(event, hint):
-
     try:
         return _before_send(event, hint)
-    except:
-        logging.warn("Could not extract data from request", exc_info=True)
+    except KeyError:
+        logging.warning("Could not extract data from request", exc_info=True)
 
 
 if not sentry_dsn:
@@ -105,11 +105,26 @@ if not sentry_dsn:
         raise RuntimeError(msg)
 
 if sentry_dsn:
-    sentry_sdk.init(sentry_dsn, max_breadcrumbs=50, before_send=before_send, debug=False)
+    if sentry_max_length:
+        try:
+            sentry_max_length = int(sentry_max_length)
+        except ValueError:
+            msg = "Environment variable SENTRY_MAX_LENGTH is malformed"
+            raise RuntimeError(msg)
+        else:
+            sentry_utils.MAX_STRING_LENGTH = sentry_max_length
+
+    sentry_sdk.init(
+        sentry_dsn,
+        max_breadcrumbs=50,
+        before_send=before_send,
+        debug=False
+    )
 
     configuration = getConfiguration()
     tags = {}
-    tags['instance_name'] = configuration.instancehome.rsplit(os.path.sep, 1)[-1]
+    instancehome = configuration.instancehome
+    tags['instance_name'] = instancehome.rsplit(os.path.sep, 1)[-1]
 
     with sentry_sdk.configure_scope() as scope:
         for k, v in tags.items():
@@ -117,11 +132,11 @@ if sentry_dsn:
         if sentry_project:
             scope.set_tag("project", sentry_project)
 
-
     logging.info("Sentry integration enabled")
 
 
-# fake registration in order to import the file properly for the sentry_skd.init() call
+# fake registration in order to import the file properly
+# for the sentry_skd.init() call
 @adapter(IPubFailure)
 def dummy(event):
     pass
