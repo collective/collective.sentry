@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Unreleased
+------------------
+- Add optional enviroment parameter to filter cookies
+
 0.2.0 (2019/11/28)
 ------------------
 - Add optional environment parameter to set max length of stacktrace ("SENTRY_MAX_LENGTH", default is 512)

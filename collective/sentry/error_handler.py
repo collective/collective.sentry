@@ -23,6 +23,10 @@ is_sentry_optional = os.environ.get("SENTRY_OPTIONAL")
 
 sentry_max_length = os.environ.get("SENTRY_MAX_LENGTH")
 
+# Blacklist cookie names seperated with a semicolon
+# COOKIES_FILTER_BLACKLIST cookiename1;cookiename2
+cookies_filter_blacklist = os.environ.get("COOKIES_FILTER_BLACKLIST")
+
 
 def _before_send(event, hint):
     """
@@ -66,7 +70,7 @@ def _before_send(event, hint):
     for k, v in _filterPasswordFields(request.form.items()):
         event["extra"]["form"][k] = repr(v)
 
-    for k, v in _filterPasswordFields(request.cookies.items()):
+    for k, v in _filter_cookies_fields(request.cookies.items()):
         event["extra"]["cookies"][k] = repr(v)
 
     for k, v in _filterPasswordFields(request._lazies.items()):
@@ -88,6 +92,18 @@ def _before_send(event, hint):
     event["extra"]["user"] = user_dict
 
     return event
+
+
+def _filter_cookies_fields(request_cookies_items):
+    if(not cookies_filter_blacklist):
+        return _filterPasswordFields(request_cookies_items)
+    else:
+        blacklist = cookies_filter_blacklist.split(';')
+        filtered_dict = dict()
+        for k, v in _filterPasswordFields(request_cookies_items):
+            if k not in blacklist:
+                filtered_dict[k] = v
+        return filtered_dict.items()
 
 
 def before_send(event, hint):
