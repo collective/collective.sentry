@@ -3,7 +3,8 @@ Changelog
 
 Unreleased
 ------------------
-- Add optional enviroment parameter to filter cookies
+- Add optional environment parameter to blacklist cookies. To prevent the Add-on e.g from sending the __ac cookie to sentry. Blacklist cookie names separated by a semicolon (e.g COOKIES_FILTER_BLACKLIST cookiename1;cookiename2)
+  [Nimo-19]
 
 0.2.0 (2019/11/28)
 ------------------

@@ -23,8 +23,6 @@ is_sentry_optional = os.environ.get("SENTRY_OPTIONAL")
 
 sentry_max_length = os.environ.get("SENTRY_MAX_LENGTH")
 
-# Blacklist cookie names seperated with a semicolon
-# COOKIES_FILTER_BLACKLIST cookiename1;cookiename2
 cookies_filter_blacklist = os.environ.get("COOKIES_FILTER_BLACKLIST")
 
 
