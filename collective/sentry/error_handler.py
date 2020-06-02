@@ -5,6 +5,8 @@
 
 import os
 import logging
+import traceback
+import sys
 import sentry_sdk
 import sentry_sdk.utils as sentry_utils
 
@@ -13,7 +15,9 @@ from zope.component import adapter
 from zope.globalrequest import getRequest
 from AccessControl.users import nobody
 from ZPublisher.interfaces import IPubFailure
+from Products.SiteErrorLog.interfaces import IErrorRaisedEvent
 from ZPublisher.HTTPRequest import _filterPasswordFields
+from sentry_sdk.integrations.logging import ignore_logger
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
 
@@ -118,6 +122,7 @@ if sentry_dsn:
         sentry_dsn,
         max_breadcrumbs=50,
         before_send=before_send,
+        attach_stacktrace=True,
         debug=False
     )
 
@@ -134,9 +139,10 @@ if sentry_dsn:
 
     logging.info("Sentry integration enabled")
 
+    ignore_logger("Zope.SiteErrorLog")
 
 # fake registration in order to import the file properly
 # for the sentry_skd.init() call
-@adapter(IPubFailure)
-def dummy(event):
-    pass
+@adapter(IErrorRaisedEvent)
+def errorRaisedSubscriber(event):
+    sentry_sdk.capture_exception(sys.exc_info())

@@ -8,5 +8,5 @@
     xmlns:plone="http://namespaces.plone.org/plone"
     >
 
-    <subscriber handler=".error_handler.dummy"/>
+    <subscriber handler=".error_handler.errorRaisedSubscriber"/>
 </configure>
