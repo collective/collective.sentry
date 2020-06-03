@@ -14,8 +14,15 @@ from App.config import getConfiguration
 from zope.component import adapter
 from zope.globalrequest import getRequest
 from AccessControl.users import nobody
-from ZPublisher.interfaces import IPubFailure
-from Products.SiteErrorLog.interfaces import IErrorRaisedEvent
+try:
+    from Products.SiteErrorLog.interfaces import IErrorRaisedEvent
+    EventInterface = IErrorRaisedEvent
+except ImportError:
+    # BBB
+    # not sure if IPubFailure will catch all errors
+    from ZPublisher.interfaces import IPubFailure
+    EventInterface = IPubFailure
+
 from ZPublisher.HTTPRequest import _filterPasswordFields
 from sentry_sdk.integrations.logging import ignore_logger
 
@@ -138,11 +145,9 @@ if sentry_dsn:
             scope.set_tag("project", sentry_project)
 
     logging.info("Sentry integration enabled")
-
     ignore_logger("Zope.SiteErrorLog")
 
-# fake registration in order to import the file properly
-# for the sentry_skd.init() call
-@adapter(IErrorRaisedEvent)
+
+@adapter(EventInterface)
 def errorRaisedSubscriber(event):
     sentry_sdk.capture_exception(sys.exc_info())
