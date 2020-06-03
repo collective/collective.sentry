@@ -3,17 +3,20 @@
 # Integration of Zope (4) with Sentry
 # The code below is heavily based on the raven.contrib. zope module
 
-import os
 import logging
-import traceback
+import os
 import sys
+import traceback
+
 import sentry_sdk
 import sentry_sdk.utils as sentry_utils
-
+from AccessControl.users import nobody
 from App.config import getConfiguration
+from sentry_sdk.integrations.logging import ignore_logger
 from zope.component import adapter
 from zope.globalrequest import getRequest
-from AccessControl.users import nobody
+from ZPublisher.HTTPRequest import _filterPasswordFields
+
 try:
     from Products.SiteErrorLog.interfaces import IErrorRaisedEvent
     EventInterface = IErrorRaisedEvent
@@ -23,8 +26,6 @@ except ImportError:
     from ZPublisher.interfaces import IPubFailure
     EventInterface = IPubFailure
 
-from ZPublisher.HTTPRequest import _filterPasswordFields
-from sentry_sdk.integrations.logging import ignore_logger
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
 
