@@ -35,6 +35,10 @@ is_sentry_optional = os.environ.get("SENTRY_OPTIONAL")
 
 sentry_max_length = os.environ.get("SENTRY_MAX_LENGTH")
 
+sentry_environment = os.environ.get("SENTRY_ENVIRONMENT")
+
+sentry_release = os.environ.get("SENTRY_RELEASE")
+
 
 def _before_send(event, hint):
     """
@@ -131,13 +135,16 @@ if sentry_dsn:
         max_breadcrumbs=50,
         before_send=before_send,
         attach_stacktrace=True,
-        debug=False
+        debug=False,
+        release=sentry_release
     )
 
     configuration = getConfiguration()
     tags = {}
     instancehome = configuration.instancehome
     tags['instance_name'] = instancehome.rsplit(os.path.sep, 1)[-1]
+    if sentry_environment:
+        tags['environment']  = sentry_environment
 
     with sentry_sdk.configure_scope() as scope:
         for k, v in tags.items():
