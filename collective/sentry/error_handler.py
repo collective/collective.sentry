@@ -40,15 +40,44 @@ sentry_environment = os.environ.get("SENTRY_ENVIRONMENT")
 sentry_release = os.environ.get("SENTRY_RELEASE")
 
 
-def _before_send(event, hint):
-    """
-     Inject Plone/Zope specific information (based on raven.contrib.zope)
-    """
+def _get_user_from_request(request):
+    user = request.get("AUTHENTICATED_USER", None)
+    if user is not None and user != nobody:
+        user_dict = {
+            "id": user.getId(),
+            "email": user.getProperty("email") or "",
+        }
+    else:
+        user_dict = {}
+    return user_dict
 
-    request = getRequest()
-    if not request:
-        return event
+def _get_other_from_request(request):
+    other = {}
+    for k, v in _filterPasswordFields(request.other.items()):
+        if k in ('PARENTS', 'RESPONSE'):
+            continue
+        other[k] = repr(v)
+    return other
 
+def _get_lazyitems_from_request(request):
+    lazy_items = {}
+    for k, v in _filterPasswordFields(request._lazies.items()):
+        lazy_items[k] = repr(v)
+    return lazy_items
+
+def _get_cookies_from_request(request):
+    cookies = {}
+    for k, v in _filterPasswordFields(request.cookies.items()):
+        cookies[k] = repr(v)
+    return cookies
+
+def _get_form_from_request(request):
+    form = {}
+    for k, v in _filterPasswordFields(request.form.items()):
+        form[k] = repr(v)
+    return form
+
+def _get_request_from_request(request):
     # ensure that all header key-value pairs are strings
     headers = dict()
     for k, v in request.environ.items():
@@ -72,36 +101,34 @@ def _before_send(event, hint):
     if "QUERY_STRING" in http["headers"]:
         http["query_string"] = http["headers"]["QUERY_STRING"]
 
-    event["extra"]["request"] = http
+    return http
 
-    event["extra"]["form"] = {}
-    event["extra"]["other"] = {}
-    event["extra"]["cookies"] = {}
-    event["extra"]["lazy items"] = {}
 
-    for k, v in _filterPasswordFields(request.form.items()):
-        event["extra"]["form"][k] = repr(v)
+def _before_send(event, hint):
+    """
+     Inject Plone/Zope specific information (based on raven.contrib.zope)
+    """
+    request = getRequest()
 
-    for k, v in _filterPasswordFields(request.cookies.items()):
-        event["extra"]["cookies"][k] = repr(v)
-
-    for k, v in _filterPasswordFields(request._lazies.items()):
-        event["extra"]["lazy items"][k] = repr(v)
-
-    for k, v in _filterPasswordFields(request.other.items()):
-        if k in ('PARENTS', 'RESPONSE'):
-            continue
-        event["extra"]["other"][k] = repr(v)
-
-    user = request.get("AUTHENTICATED_USER", None)
-    if user is not None and user != nobody:
-        user_dict = {
-            "id": user.getId(),
-            "email": user.getProperty("email") or "",
-        }
-    else:
-        user_dict = {}
-    event["extra"]["user"] = user_dict
+    if request:
+        # We have no request if event is captured by errorRaisedSubscriber (see below)
+        # so extra information must be set there.
+        # If the event is send by pythons logging module we set extra info here.
+        if not "other" in event["extra"]:
+            event["extra"]["other"] = _get_other_from_request(request)
+        if not "lazy items" in event["extra"]:
+            event["extra"]["lazy items"] = _get_lazyitems_from_request(request)
+        if not "cookies" in event["extra"]:
+            event["extra"]["cookies"] = _get_cookies_from_request(request)
+        if not "form" in event["extra"]:
+            event["extra"]["form"] = _get_form_from_request(request)
+        if not "request" in event["extra"]:
+            event["extra"]["request"] = _get_request_from_request(request)
+        user_info = _get_user_from_request(request)
+        if not "user" in event["extra"]:
+            event["extra"]["user"] = user_info
+        if not "user" in event:
+            event["user"] = user_info
 
     return event
 
@@ -158,4 +185,15 @@ if sentry_dsn:
 
 @adapter(EventInterface)
 def errorRaisedSubscriber(event):
-    sentry_sdk.capture_exception(sys.exc_info())
+    with sentry_sdk.push_scope() as scope:
+        scope.set_extra("other", _get_other_from_request(event.request))
+        scope.set_extra("lazy items", _get_lazyitems_from_request(event.request))
+        scope.set_extra("cookies", _get_cookies_from_request(event.request))
+        scope.set_extra("form", _get_form_from_request(event.request))
+        scope.set_extra("request", _get_request_from_request(event.request))
+        user_info = _get_user_from_request(event.request)
+        scope.set_extra("user", user_info)
+        if user_info and 'id' in user_info:
+            scope.user = user_info
+
+        sentry_sdk.capture_exception(sys.exc_info())
