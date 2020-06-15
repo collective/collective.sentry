@@ -11,20 +11,13 @@ import traceback
 import sentry_sdk
 import sentry_sdk.utils as sentry_utils
 from AccessControl.users import nobody
+from AccessControl.SecurityManagement import getSecurityManager
 from App.config import getConfiguration
 from sentry_sdk.integrations.logging import ignore_logger
 from zope.component import adapter
 from zope.globalrequest import getRequest
 from ZPublisher.HTTPRequest import _filterPasswordFields
-
-try:
-    from Products.SiteErrorLog.interfaces import IErrorRaisedEvent
-    EventInterface = IErrorRaisedEvent
-except ImportError:
-    # BBB
-    # not sure if IPubFailure will catch all errors
-    from ZPublisher.interfaces import IPubFailure
-    EventInterface = IPubFailure
+from ZPublisher.interfaces import IPubFailure
 
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -35,8 +28,13 @@ is_sentry_optional = os.environ.get("SENTRY_OPTIONAL")
 
 sentry_max_length = os.environ.get("SENTRY_MAX_LENGTH")
 
+
 def _get_user_from_request(request):
     user = request.get("AUTHENTICATED_USER", None)
+
+    if(user is None):
+        user = getSecurityManager().getUser()
+
     if user is not None and user != nobody:
         user_dict = {
             "id": user.getId(),
@@ -44,6 +42,7 @@ def _get_user_from_request(request):
         }
     else:
         user_dict = {}
+
     return user_dict
 
 def _get_other_from_request(request):
@@ -175,7 +174,7 @@ if sentry_dsn:
     ignore_logger("Zope.SiteErrorLog")
 
 
-@adapter(EventInterface)
+@adapter(IPubFailure)
 def errorRaisedSubscriber(event):
     with sentry_sdk.push_scope() as scope:
         scope.set_extra("other", _get_other_from_request(event.request))
