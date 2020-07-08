@@ -32,9 +32,11 @@ additional tag `project` can be configured (optional) if you set the
 environment variable `SENTRY_PROJECT`.  This allows you introduce an additional
 tag for filtering, if needed.
 
-Another option for filtering is `SENTRY_ENVIRONMENT`, useful to differentiate 
-between e.g. staging vs production 
-(https://docs.sentry.io/enriching-error-data/environments/?platform=python).
+
+Set `SENTRY_ENVIRONMENT` to differentiate between environments e.g. staging vs production 
+(https://docs.sentry.io/enriching-error-data/environments/)
+
+Set `SENTRY_RELEASE` to sent release information to sentry. (https://docs.sentry.io/workflow/releases/)
 
 
 Optional activation
