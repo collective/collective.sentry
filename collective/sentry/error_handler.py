@@ -34,7 +34,7 @@ sentry_max_length = os.environ.get("SENTRY_MAX_LENGTH")
 def _get_user_from_request(request):
     user = request.get("AUTHENTICATED_USER", None)
 
-    if(user is None):
+    if user is None:
         user = getSecurityManager().getUser()
 
     if user is not None and user != nobody:
@@ -47,13 +47,15 @@ def _get_user_from_request(request):
 
     return user_dict
 
+
 def _get_other_from_request(request):
     other = {}
     for k, v in _filterPasswordFields(request.other.items()):
-        if k in ('PARENTS', 'RESPONSE'):
+        if k in ("PARENTS", "RESPONSE"):
             continue
         other[k] = repr(v)
     return other
+
 
 def _get_lazyitems_from_request(request):
     lazy_items = {}
@@ -61,17 +63,20 @@ def _get_lazyitems_from_request(request):
         lazy_items[k] = repr(v)
     return lazy_items
 
+
 def _get_cookies_from_request(request):
     cookies = {}
     for k, v in _filterPasswordFields(request.cookies.items()):
         cookies[k] = repr(v)
     return cookies
 
+
 def _get_form_from_request(request):
     form = {}
     for k, v in _filterPasswordFields(request.form.items()):
         form[k] = repr(v)
     return form
+
 
 def _get_request_from_request(request):
     # ensure that all header key-value pairs are strings
@@ -158,14 +163,14 @@ if sentry_dsn:
         max_breadcrumbs=50,
         before_send=before_send,
         attach_stacktrace=True,
-        debug=False
+        debug=False,
         environment=sentry_environment,
     )
 
     configuration = getConfiguration()
     tags = {}
     instancehome = configuration.instancehome
-    tags['instance_name'] = instancehome.rsplit(os.path.sep, 1)[-1]
+    tags["instance_name"] = instancehome.rsplit(os.path.sep, 1)[-1]
 
     with sentry_sdk.configure_scope() as scope:
         for k, v in tags.items():
@@ -187,7 +192,7 @@ def errorRaisedSubscriber(event):
         scope.set_extra("request", _get_request_from_request(event.request))
         user_info = _get_user_from_request(event.request)
         scope.set_extra("user", user_info)
-        if user_info and 'id' in user_info:
+        if user_info and "id" in user_info:
             scope.user = user_info
 
         sentry_sdk.capture_exception(sys.exc_info())

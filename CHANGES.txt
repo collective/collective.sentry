@@ -1,7 +1,8 @@
 Changelog
 =========
-Unreleased
-----------
+
+0.2.1 (2020/07/08)
+------------------
 - Add SENTRY_ENVIRONMENT option.
   [fulv]
 
