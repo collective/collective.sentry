@@ -24,6 +24,8 @@ sentry_dsn = os.environ.get("SENTRY_DSN")
 
 sentry_project = os.environ.get("SENTRY_PROJECT")
 
+sentry_environment = os.environ.get("SENTRY_ENVIRONMENT")
+
 is_sentry_optional = os.environ.get("SENTRY_OPTIONAL")
 
 sentry_max_length = os.environ.get("SENTRY_MAX_LENGTH")
@@ -157,6 +159,7 @@ if sentry_dsn:
         before_send=before_send,
         attach_stacktrace=True,
         debug=False
+        environment=sentry_environment,
     )
 
     configuration = getConfiguration()
