@@ -13,7 +13,7 @@ def read(*rnames):
 version = '0.2.1'
 
 long_description = (
-        read('README.txt')
+        read('README.rst')
         + '\n' +
         read('CHANGES.txt')
         + '\n' +
@@ -35,7 +35,6 @@ setup(name='collective.sentry',
           "Programming Language :: Python :: 3.6",
           "Programming Language :: Python :: 3.7",
           "Framework :: Plone",
-          "Framework :: Plone :: 5.1",
           "Framework :: Plone :: 5.2",
           "Framework :: Zope",
           "Framework :: Zope :: 4",
