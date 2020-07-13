@@ -6,8 +6,8 @@ Sentry integration with Zope.
 Requirements
 ------------
 
-* Plone 5.2 (tested)
-* Python 3.6+ (tested)
+* Plone 5.2, 5.1 (tested)
+* Python 3.6+, 2.7 (tested)
 
 Installation
 ------------
