@@ -14,6 +14,7 @@ from AccessControl.users import nobody
 from AccessControl.SecurityManagement import getSecurityManager
 from App.config import getConfiguration
 from sentry_sdk.integrations.logging import ignore_logger
+from plone import api
 from zope.component import adapter
 from zope.globalrequest import getRequest
 from ZPublisher.HTTPRequest import _filterPasswordFields
@@ -184,9 +185,16 @@ if sentry_dsn:
 
 @adapter(IPubFailure)
 def errorRaisedSubscriber(event):
+
+    error_log = api.portal.get_tool(name="error_log")
+    if sys.exc_info()[0].__name__ in error_log._ignored_exceptions:
+        return
+
     with sentry_sdk.push_scope() as scope:
         scope.set_extra("other", _get_other_from_request(event.request))
-        scope.set_extra("lazy items", _get_lazyitems_from_request(event.request))
+        scope.set_extra(
+            "lazy items", _get_lazyitems_from_request(event.request)
+        )
         scope.set_extra("cookies", _get_cookies_from_request(event.request))
         scope.set_extra("form", _get_form_from_request(event.request))
         scope.set_extra("request", _get_request_from_request(event.request))
