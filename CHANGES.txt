@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.2.2 (unreleased)
+------------------
+- Add check with error_log ignored_exceptions before send exceptions to sentry
+  [eikichi18]
+
 0.2.1 (2020/07/08)
 ------------------
 - Add SENTRY_ENVIRONMENT option.
