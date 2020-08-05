@@ -1,6 +1,12 @@
 Changelog
 =========
 
+
+0.2.3 (2020/08/05)
+------------------
+- Fix error handling on zope site root 
+  [krissik]
+
 0.2.2 (2020/07/13)
 ------------------
 - Add check with error_log ignored_exceptions before send exceptions to sentry
