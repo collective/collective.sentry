@@ -10,16 +10,16 @@ import traceback
 
 import sentry_sdk
 import sentry_sdk.utils as sentry_utils
-from AccessControl.users import nobody
 from AccessControl.SecurityManagement import getSecurityManager
+from AccessControl.users import nobody
 from App.config import getConfiguration
-from sentry_sdk.integrations.logging import ignore_logger
 from plone import api
+from plone.api.exc import CannotGetPortalError
+from sentry_sdk.integrations.logging import ignore_logger
 from zope.component import adapter
 from zope.globalrequest import getRequest
 from ZPublisher.HTTPRequest import _filterPasswordFields
 from ZPublisher.interfaces import IPubFailure
-
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
 
@@ -185,9 +185,13 @@ if sentry_dsn:
 
 @adapter(IPubFailure)
 def errorRaisedSubscriber(event):
+    exc_info = sys.exc_info() # Save exc_info before new exceptions (CannotGetPortalError) arise
+    try:
+        error_log = api.portal.get_tool(name="error_log")
+    except CannotGetPortalError:
+        error_log = None
 
-    error_log = api.portal.get_tool(name="error_log")
-    if sys.exc_info()[0].__name__ in error_log._ignored_exceptions:
+    if error_log and exc_info[0].__name__ in error_log._ignored_exceptions:
         return
 
     with sentry_sdk.push_scope() as scope:
@@ -203,4 +207,4 @@ def errorRaisedSubscriber(event):
         if user_info and "id" in user_info:
             scope.user = user_info
 
-        sentry_sdk.capture_exception(sys.exc_info())
+        sentry_sdk.capture_exception(exc_info)
