@@ -189,7 +189,11 @@ def errorRaisedSubscriber(event):
     try:
         error_log = api.portal.get_tool(name="error_log")
     except CannotGetPortalError:
-        error_log = None
+        # Try to get Zope root.
+        try:
+            error_log = event.request.PARENTS[0].error_log
+        except (AttributeError, KeyError, IndexError):
+            error_log = None
 
     if error_log and exc_info[0].__name__ in error_log._ignored_exceptions:
         return
