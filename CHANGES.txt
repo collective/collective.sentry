@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-0.2.4 (unreleased)
+0.2.4 (2020/09/07)
 ------------------
 
 - Ignore exceptions that are ignored in the root Zope error_log.

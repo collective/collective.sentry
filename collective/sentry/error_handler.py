@@ -185,7 +185,9 @@ if sentry_dsn:
 
 @adapter(IPubFailure)
 def errorRaisedSubscriber(event):
-    exc_info = sys.exc_info() # Save exc_info before new exceptions (CannotGetPortalError) arise
+    exc_info = (
+        sys.exc_info()
+    )  # Save exc_info before new exceptions (CannotGetPortalError) arise
     try:
         error_log = api.portal.get_tool(name="error_log")
     except CannotGetPortalError:
@@ -200,9 +202,7 @@ def errorRaisedSubscriber(event):
 
     with sentry_sdk.push_scope() as scope:
         scope.set_extra("other", _get_other_from_request(event.request))
-        scope.set_extra(
-            "lazy items", _get_lazyitems_from_request(event.request)
-        )
+        scope.set_extra("lazy items", _get_lazyitems_from_request(event.request))
         scope.set_extra("cookies", _get_cookies_from_request(event.request))
         scope.set_extra("form", _get_form_from_request(event.request))
         scope.set_extra("request", _get_request_from_request(event.request))
