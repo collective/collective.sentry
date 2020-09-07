@@ -5,12 +5,13 @@ Changelog
 0.2.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Ignore exceptions that are ignored in the root Zope error_log.
+  [maurits]
 
 
 0.2.3 (2020/08/05)
 ------------------
-- Fix error handling on zope site root 
+- Fix error handling on zope site root
   [krissik]
 
 0.2.2 (2020/07/13)
