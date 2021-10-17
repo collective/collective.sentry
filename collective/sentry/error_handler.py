@@ -7,6 +7,7 @@ import logging
 import os
 import sys
 import traceback
+import importlib
 
 import sentry_sdk
 import sentry_sdk.utils as sentry_utils
@@ -30,6 +31,8 @@ sentry_environment = os.environ.get("SENTRY_ENVIRONMENT")
 is_sentry_optional = os.environ.get("SENTRY_OPTIONAL")
 
 sentry_max_length = os.environ.get("SENTRY_MAX_LENGTH")
+
+sentry_integrations = os.environ.get("SENTRY_INTEGRATIONS")
 
 
 def _get_user_from_request(request):
@@ -106,6 +109,18 @@ def _get_request_from_request(request):
     return http
 
 
+def _load_class(full_class_string):
+    """
+    Dynamically load a class from a string
+    """
+    class_data = full_class_string.split(".")
+    module_path = ".".join(class_data[:-1])
+    class_str = class_data[-1]
+
+    module = importlib.import_module(module_path)
+    return getattr(module, class_str)
+
+
 def _before_send(event, hint):
     """
      Inject Plone/Zope specific information (based on raven.contrib.zope)
@@ -159,6 +174,13 @@ if sentry_dsn:
         else:
             sentry_utils.MAX_STRING_LENGTH = sentry_max_length
 
+    integrations = []
+    if sentry_integrations:
+        integrations = []
+        for i in sentry_integrations.split(','):
+            klass = _load_class(i)
+            integrations.append(klass())
+
     sentry_sdk.init(
         sentry_dsn,
         max_breadcrumbs=50,
@@ -166,6 +188,7 @@ if sentry_dsn:
         attach_stacktrace=True,
         debug=False,
         environment=sentry_environment,
+        integrations=integrations
     )
 
     configuration = getConfiguration()
