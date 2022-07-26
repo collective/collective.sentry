@@ -35,6 +35,26 @@ sentry_max_length = os.environ.get("SENTRY_MAX_LENGTH")
 sentry_integrations = os.environ.get("SENTRY_INTEGRATIONS")
 
 
+def _ignore_error(event):
+    """Check if the error should be ignored based on the error log settings."""
+    exc_info = (
+        sys.exc_info()
+    )  # Save exc_info before new exceptions (CannotGetPortalError) arise
+    try:
+        error_log = api.portal.get_tool(name="error_log")
+    except CannotGetPortalError:
+        # Try to get Zope root.
+        try:
+            error_log = event.request.PARENTS[0].error_log
+        except (AttributeError, KeyError, IndexError):
+            error_log = None
+
+    if error_log and exc_info[0].__name__ in error_log._ignored_exceptions:
+        return True
+
+    return False
+
+
 def _get_user_from_request(request):
     user = request.get("AUTHENTICATED_USER", None)
 
@@ -125,6 +145,9 @@ def _before_send(event, hint):
     """
      Inject Plone/Zope specific information (based on raven.contrib.zope)
     """
+    if _ignore_error(event):
+        return
+
     request = getRequest()
 
     if request:
@@ -208,19 +231,7 @@ if sentry_dsn:
 
 @adapter(IPubFailure)
 def errorRaisedSubscriber(event):
-    exc_info = (
-        sys.exc_info()
-    )  # Save exc_info before new exceptions (CannotGetPortalError) arise
-    try:
-        error_log = api.portal.get_tool(name="error_log")
-    except CannotGetPortalError:
-        # Try to get Zope root.
-        try:
-            error_log = event.request.PARENTS[0].error_log
-        except (AttributeError, KeyError, IndexError):
-            error_log = None
-
-    if error_log and exc_info[0].__name__ in error_log._ignored_exceptions:
+    if _ignore_error(event):
         return
 
     with sentry_sdk.push_scope() as scope:
