@@ -234,6 +234,10 @@ def errorRaisedSubscriber(event):
     if _ignore_error(event):
         return
 
+    exc_info = (
+        sys.exc_info()
+    )
+    
     with sentry_sdk.push_scope() as scope:
         scope.set_extra("other", _get_other_from_request(event.request))
         scope.set_extra("lazy items", _get_lazyitems_from_request(event.request))
