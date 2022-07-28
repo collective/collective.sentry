@@ -3,6 +3,10 @@ Changelog
 
 
 UNRELEASED
+----------
+- Fix a problem on `errorRaisedSubscriber` function that was missing the `exc_info` variable. [thomasmassmann]
+
+0.2.5 (2022/07/26)
 ------------------
 
 - Add optional environment parameter for Sentry integrations ("SENTRY_INTEGRATIONS", comma seperated list)
