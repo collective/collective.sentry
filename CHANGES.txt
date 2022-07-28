@@ -2,9 +2,10 @@ Changelog
 =========
 
 
-UNRELEASED
-----------
+0.3 (unreleased)
+----------------
 - Fix a problem on `errorRaisedSubscriber` function that was missing the `exc_info` variable. [thomasmassmann]
+
 
 0.2.5 (2022/07/26)
 ------------------
