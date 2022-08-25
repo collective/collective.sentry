@@ -10,7 +10,7 @@ def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
 
-version = '0.2.4'
+version = '0.2.7.dev0'
 
 long_description = (
         read('README.rst')
@@ -27,9 +27,8 @@ setup(name='collective.sentry',
       # Get more strings from
       # http://www.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
-          "Framework :: Plone",
+          "Development Status :: 4 - Beta",
           "Intended Audience :: Developers",
-          "Topic :: Software Development :: Libraries :: Python Modules",
           "License :: OSI Approved :: GNU General Public License (GPL)",
           "Programming Language :: Python",
           "Programming Language :: Python :: 3.6",
@@ -47,6 +46,10 @@ setup(name='collective.sentry',
       packages=find_packages(exclude=['ez_setup']),
       namespace_packages=['collective', ],
       include_package_data=True,
+      project_urls={
+        "Code": "https://github.com/collective/collective.sentry",
+        "Tracker": "https://github.com/collective/collective.sentry/issues",
+      },
       zip_safe=False,
       install_requires=['setuptools',
                         'sentry-sdk'

@@ -7,6 +7,7 @@ import logging
 import os
 import sys
 import traceback
+import importlib
 
 import sentry_sdk
 import sentry_sdk.utils as sentry_utils
@@ -32,6 +33,29 @@ is_sentry_optional = os.environ.get("SENTRY_OPTIONAL")
 sentry_max_length = os.environ.get("SENTRY_MAX_LENGTH")
 
 sentry_disable = os.environ.get("SENTRY_DISABLE") or False
+
+sentry_integrations = os.environ.get("SENTRY_INTEGRATIONS")
+
+
+def _ignore_error(event):
+    """Check if the error should be ignored based on the error log settings."""
+    exc_info = (
+        sys.exc_info()
+    )  # Save exc_info before new exceptions (CannotGetPortalError) arise
+    try:
+        error_log = api.portal.get_tool(name="error_log")
+    except CannotGetPortalError:
+        # Try to get Zope root.
+        try:
+            error_log = event.request.PARENTS[0].error_log
+        except (AttributeError, KeyError, IndexError):
+            error_log = None
+
+    if error_log and exc_info[0].__name__ in error_log._ignored_exceptions:
+        return True
+
+    return False
+
 
 def _get_user_from_request(request):
     user = request.get("AUTHENTICATED_USER", None)
@@ -107,10 +131,25 @@ def _get_request_from_request(request):
     return http
 
 
+def _load_class(full_class_string):
+    """
+    Dynamically load a class from a string
+    """
+    class_data = full_class_string.split(".")
+    module_path = ".".join(class_data[:-1])
+    class_str = class_data[-1]
+
+    module = importlib.import_module(module_path)
+    return getattr(module, class_str)
+
+
 def _before_send(event, hint):
     """
      Inject Plone/Zope specific information (based on raven.contrib.zope)
     """
+    if _ignore_error(event):
+        return
+
     request = getRequest()
 
     if request:
@@ -148,7 +187,38 @@ if not sentry_disable:
         if is_sentry_optional:
             logging.info(msg)
         else:
-            raise RuntimeError(msg)
+            sentry_utils.MAX_STRING_LENGTH = sentry_max_length
+
+    integrations = []
+    if sentry_integrations:
+        integrations = []
+        for i in sentry_integrations.split(','):
+            klass = _load_class(i)
+            integrations.append(klass())
+
+    sentry_sdk.init(
+        sentry_dsn,
+        max_breadcrumbs=50,
+        before_send=before_send,
+        attach_stacktrace=True,
+        debug=False,
+        environment=sentry_environment,
+        integrations=integrations
+    )
+
+    configuration = getConfiguration()
+    tags = {}
+    instancehome = configuration.instancehome
+    tags["instance_name"] = instancehome.rsplit(os.path.sep, 1)[-1]
+
+    with sentry_sdk.configure_scope() as scope:
+        for k, v in tags.items():
+            scope.set_tag(k, v)
+        if sentry_project:
+            scope.set_tag("project", sentry_project)
+
+    logging.info("Sentry integration enabled")
+    ignore_logger("Zope.SiteErrorLog")
 
     if sentry_dsn:
         if sentry_max_length:
@@ -187,21 +257,13 @@ else:
 
 @adapter(IPubFailure)
 def errorRaisedSubscriber(event):
-    exc_info = (
-        sys.exc_info()
-    )  # Save exc_info before new exceptions (CannotGetPortalError) arise
-    try:
-        error_log = api.portal.get_tool(name="error_log")
-    except CannotGetPortalError:
-        # Try to get Zope root.
-        try:
-            error_log = event.request.PARENTS[0].error_log
-        except (AttributeError, KeyError, IndexError):
-            error_log = None
-
-    if error_log and exc_info[0].__name__ in error_log._ignored_exceptions:
+    if _ignore_error(event):
         return
 
+    exc_info = (
+        sys.exc_info()
+    )
+    
     with sentry_sdk.push_scope() as scope:
         scope.set_extra("other", _get_other_from_request(event.request))
         scope.set_extra("lazy items", _get_lazyitems_from_request(event.request))
