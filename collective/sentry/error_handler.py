@@ -32,6 +32,8 @@ is_sentry_optional = os.environ.get("SENTRY_OPTIONAL")
 
 sentry_max_length = os.environ.get("SENTRY_MAX_LENGTH")
 
+sentry_disable = os.environ.get("SENTRY_DISABLE") or False
+
 sentry_integrations = os.environ.get("SENTRY_INTEGRATIONS")
 
 
@@ -179,21 +181,11 @@ def before_send(event, hint):
     except KeyError:
         logging.warning("Could not extract data from request", exc_info=True)
 
-
-if not sentry_dsn:
-    msg = "Environment variable SENTRY_DSN not configured"
-    if is_sentry_optional:
-        logging.info(msg)
-    else:
-        raise RuntimeError(msg)
-
-if sentry_dsn:
-    if sentry_max_length:
-        try:
-            sentry_max_length = int(sentry_max_length)
-        except ValueError:
-            msg = "Environment variable SENTRY_MAX_LENGTH is malformed"
-            raise RuntimeError(msg)
+if not sentry_disable:
+    if not sentry_dsn:
+        msg = "Environment variable SENTRY_DSN not configured"
+        if is_sentry_optional:
+            logging.info(msg)
         else:
             sentry_utils.MAX_STRING_LENGTH = sentry_max_length
 
@@ -228,6 +220,40 @@ if sentry_dsn:
     logging.info("Sentry integration enabled")
     ignore_logger("Zope.SiteErrorLog")
 
+    if sentry_dsn:
+        if sentry_max_length:
+            try:
+                sentry_max_length = int(sentry_max_length)
+            except ValueError:
+                msg = "Environment variable SENTRY_MAX_LENGTH is malformed"
+                raise RuntimeError(msg)
+            else:
+                sentry_utils.MAX_STRING_LENGTH = sentry_max_length
+
+        sentry_sdk.init(
+            sentry_dsn,
+            max_breadcrumbs=50,
+            before_send=before_send,
+            attach_stacktrace=True,
+            debug=False,
+            environment=sentry_environment,
+        )
+
+        configuration = getConfiguration()
+        tags = {}
+        instancehome = configuration.instancehome
+        tags["instance_name"] = instancehome.rsplit(os.path.sep, 1)[-1]
+
+        with sentry_sdk.configure_scope() as scope:
+            for k, v in tags.items():
+                scope.set_tag(k, v)
+            if sentry_project:
+                scope.set_tag("project", sentry_project)
+
+        logging.info("Sentry integration enabled")
+        ignore_logger("Zope.SiteErrorLog")
+else:
+    logging.info("Sentry integration disabled b/c SENTRY_DISABLE is set")
 
 @adapter(IPubFailure)
 def errorRaisedSubscriber(event):
