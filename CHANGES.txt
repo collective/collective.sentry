@@ -5,7 +5,7 @@ Changelog
 0.2.7 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add enviroment var to disable sentry integration. [krissik]
 
 
 0.2.6 (2022-07-28)
