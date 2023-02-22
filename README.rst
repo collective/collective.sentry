@@ -38,7 +38,7 @@ Set `SENTRY_ENVIRONMENT` to differentiate between environments e.g. staging vs p
 
 Set `SENTRY_RELEASE` to sent release information to sentry. (https://docs.sentry.io/workflow/releases/)
 
-Ser ´SENTRY_INTEGRATIONS` (comma seperated) for different Integrations. (https://docs.sentry.io/platforms/python/configuration/integrations/)
+Set ´SENTRY_INTEGRATIONS` (comma seperated) for different Integrations. (https://docs.sentry.io/platforms/python/configuration/integrations/)
 
 Optional activation
 ---------------------
