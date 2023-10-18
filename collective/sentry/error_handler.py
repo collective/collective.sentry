@@ -30,7 +30,7 @@ sentry_environment = os.environ.get("SENTRY_ENVIRONMENT")
 
 is_sentry_optional = os.environ.get("SENTRY_OPTIONAL")
 
-sentry_max_length = int(os.environ.get("SENTRY_MAX_LENGTH", default=512))
+sentry_max_length = int(os.environ.get("SENTRY_MAX_LENGTH", 512))
 
 sentry_disable = os.environ.get("SENTRY_DISABLE") or False
 
