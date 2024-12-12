@@ -5,6 +5,7 @@
 
 import logging
 import os
+import socket
 import sys
 import traceback
 import importlib
@@ -25,6 +26,8 @@ from ZPublisher.interfaces import IPubFailure
 sentry_dsn = os.environ.get("SENTRY_DSN")
 
 sentry_project = os.environ.get("SENTRY_PROJECT")
+
+sentry_hostname = os.environ.get("SENTRY_HOSTNAME") or socket.gethostname()
 
 sentry_environment = os.environ.get("SENTRY_ENVIRONMENT")
 
@@ -211,6 +214,7 @@ if not sentry_disable:
     instancehome = configuration.instancehome
     tags["instance_name"] = instancehome.rsplit(os.path.sep, 1)[-1]
 
+    tags["host"] = sentry_hostname
     with sentry_sdk.configure_scope() as scope:
         for k, v in tags.items():
             scope.set_tag(k, v)
