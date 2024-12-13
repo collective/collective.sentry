@@ -39,6 +39,21 @@ sentry_disable = os.environ.get("SENTRY_DISABLE") or False
 
 sentry_integrations = os.environ.get("SENTRY_INTEGRATIONS")
 
+sample_rate = os.environ.get("SENTRY_SAMPLE_RATE") or 1.0
+
+enable_tracing = os.environ.get("SENTRY_ENABLE_TRACING") or False
+if enable_tracing:
+    logging.info("Enabling Sentry tracing")
+    enable_tracing = True
+
+traces_sample_rate = os.environ.get("SENTRY_TRACES_SAMPLE_RATE") or None
+if traces_sample_rate:
+    try:
+        traces_sample_rate = float(traces_sample_rate)
+    except TypeError:
+        logging.warning('Invalid env value for SENTRY_TRACES_SAMPLE_RATE, defaulting to None')
+        traces_sample_rate = None
+
 
 def _ignore_error(event):
     """Check if the error should be ignored based on the error log settings."""
@@ -192,37 +207,40 @@ if not sentry_disable:
         else:
             sentry_utils.MAX_STRING_LENGTH = sentry_max_length
 
-    integrations = []
-    if sentry_integrations:
         integrations = []
-        for i in sentry_integrations.split(','):
-            klass = _load_class(i)
-            integrations.append(klass())
+        if sentry_integrations:
+            integrations = []
+            for i in sentry_integrations.split(','):
+                klass = _load_class(i)
+                integrations.append(klass())
 
-    sentry_sdk.init(
-        sentry_dsn,
-        max_breadcrumbs=50,
-        before_send=before_send,
-        attach_stacktrace=True,
-        debug=False,
-        environment=sentry_environment,
-        integrations=integrations
-    )
+        sentry_sdk.init(
+            sentry_dsn,
+            max_breadcrumbs=50,
+            before_send=before_send,
+            attach_stacktrace=True,
+            debug=False,
+            environment=sentry_environment,
+            integrations=integrations,
+            sample_rate=sample_rate,
+            enable_tracing=enable_tracing,
+            traces_sample_rate=traces_sample_rate,
+            server_name = sentry_hostname
+        )
 
-    configuration = getConfiguration()
-    tags = {}
-    instancehome = configuration.instancehome
-    tags["instance_name"] = instancehome.rsplit(os.path.sep, 1)[-1]
+        configuration = getConfiguration()
+        tags = {}
+        instancehome = configuration.instancehome
+        tags["instance_name"] = instancehome.rsplit(os.path.sep, 1)[-1]
 
-    tags["host"] = sentry_hostname
-    with sentry_sdk.configure_scope() as scope:
-        for k, v in tags.items():
-            scope.set_tag(k, v)
-        if sentry_project:
-            scope.set_tag("project", sentry_project)
+        with sentry_sdk.configure_scope() as scope:
+            for k, v in tags.items():
+                scope.set_tag(k, v)
+            if sentry_project:
+                scope.set_tag("project", sentry_project)
 
-    logging.info("Sentry integration enabled")
-    ignore_logger("Zope.SiteErrorLog")
+        logging.info("Sentry integration enabled")
+        ignore_logger("Zope.SiteErrorLog")
 
     if sentry_dsn:
         if sentry_max_length:
@@ -241,6 +259,10 @@ if not sentry_disable:
             attach_stacktrace=True,
             debug=False,
             environment=sentry_environment,
+            sample_rate=sample_rate,
+            enable_tracing=enable_tracing,
+            traces_sample_rate=traces_sample_rate,
+            server_name = sentry_hostname
         )
 
         configuration = getConfiguration()
