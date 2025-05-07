@@ -23,6 +23,7 @@ setup(
     version=version,
     description="Sentry integration with Plone 5.2/Zope 4",
     long_description=long_description,
+    python_requires=">=3.9",
     # Get more strings from
     # http://www.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
