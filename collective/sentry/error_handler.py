@@ -146,7 +146,7 @@ def _load_class(full_class_string):
 
 def _before_send(event, hint):
     """
-     Inject Plone/Zope specific information (based on raven.contrib.zope)
+    Inject Plone/Zope specific information (based on raven.contrib.zope)
     """
     if _ignore_error(event):
         return
@@ -182,6 +182,7 @@ def before_send(event, hint):
     except KeyError:
         logging.warning("Could not extract data from request", exc_info=True)
 
+
 if not sentry_disable:
     if not sentry_dsn:
         msg = "Environment variable SENTRY_DSN not configured"
@@ -193,7 +194,7 @@ if not sentry_disable:
     integrations = []
     if sentry_integrations:
         integrations = []
-        for i in sentry_integrations.split(','):
+        for i in sentry_integrations.split(","):
             klass = _load_class(i)
             integrations.append(klass())
 
@@ -204,7 +205,7 @@ if not sentry_disable:
         attach_stacktrace=True,
         debug=False,
         environment=sentry_environment,
-        integrations=integrations
+        integrations=integrations,
     )
 
     configuration = getConfiguration()
@@ -256,15 +257,14 @@ if not sentry_disable:
 else:
     logging.info("Sentry integration disabled b/c SENTRY_DISABLE is set")
 
+
 @adapter(IPubFailure)
 def errorRaisedSubscriber(event):
     if _ignore_error(event):
         return
 
-    exc_info = (
-        sys.exc_info()
-    )
-    
+    exc_info = sys.exc_info()
+
     with sentry_sdk.push_scope() as scope:
         scope.set_extra("other", _get_other_from_request(event.request))
         scope.set_extra("lazy items", _get_lazyitems_from_request(event.request))
