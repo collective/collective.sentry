@@ -20,7 +20,6 @@ import os
 import sentry_sdk
 import sentry_sdk.utils as sentry_utils
 import sys
-import traceback
 
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -115,7 +114,7 @@ def _get_request_from_request(request):
 
     body_pos = request.stdin.tell()
     request.stdin.seek(0)
-    body = request.stdin.read()
+    request.stdin.read()
     request.stdin.seek(body_pos)
     http = dict(
         headers=headers,
@@ -157,20 +156,20 @@ def _before_send(event, hint):
         # We have no request if event is captured by errorRaisedSubscriber (see below)
         # so extra information must be set there.
         # If the event is send by pythons logging module we set extra info here.
-        if not "other" in event["extra"]:
+        if "other" not in event["extra"]:
             event["extra"]["other"] = _get_other_from_request(request)
-        if not "lazy items" in event["extra"]:
+        if "lazy items" not in event["extra"]:
             event["extra"]["lazy items"] = _get_lazyitems_from_request(request)
-        if not "cookies" in event["extra"]:
+        if "cookies" not in event["extra"]:
             event["extra"]["cookies"] = _get_cookies_from_request(request)
-        if not "form" in event["extra"]:
+        if "form" not in event["extra"]:
             event["extra"]["form"] = _get_form_from_request(request)
-        if not "request" in event["extra"]:
+        if "request" not in event["extra"]:
             event["extra"]["request"] = _get_request_from_request(request)
         user_info = _get_user_from_request(request)
-        if not "user" in event["extra"]:
+        if "user" not in event["extra"]:
             event["extra"]["user"] = user_info
-        if not "user" in event:
+        if "user" not in event:
             event["user"] = user_info
 
     return event
