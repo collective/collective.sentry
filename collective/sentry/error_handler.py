@@ -3,14 +3,6 @@
 # Integration of Zope (4) with Sentry
 # The code below is heavily based on the raven.contrib. zope module
 
-import logging
-import os
-import sys
-import traceback
-import importlib
-
-import sentry_sdk
-import sentry_sdk.utils as sentry_utils
 from AccessControl.SecurityManagement import getSecurityManager
 from AccessControl.users import nobody
 from App.config import getConfiguration
@@ -21,6 +13,14 @@ from zope.component import adapter
 from zope.globalrequest import getRequest
 from ZPublisher.HTTPRequest import _filterPasswordFields
 from ZPublisher.interfaces import IPubFailure
+
+import importlib
+import logging
+import os
+import sentry_sdk
+import sentry_sdk.utils as sentry_utils
+import sys
+
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
 
@@ -114,7 +114,7 @@ def _get_request_from_request(request):
 
     body_pos = request.stdin.tell()
     request.stdin.seek(0)
-    body = request.stdin.read()
+    request.stdin.read()
     request.stdin.seek(body_pos)
     http = dict(
         headers=headers,
@@ -145,7 +145,7 @@ def _load_class(full_class_string):
 
 def _before_send(event, hint):
     """
-     Inject Plone/Zope specific information (based on raven.contrib.zope)
+    Inject Plone/Zope specific information (based on raven.contrib.zope)
     """
     if _ignore_error(event):
         return
@@ -156,20 +156,20 @@ def _before_send(event, hint):
         # We have no request if event is captured by errorRaisedSubscriber (see below)
         # so extra information must be set there.
         # If the event is send by pythons logging module we set extra info here.
-        if not "other" in event["extra"]:
+        if "other" not in event["extra"]:
             event["extra"]["other"] = _get_other_from_request(request)
-        if not "lazy items" in event["extra"]:
+        if "lazy items" not in event["extra"]:
             event["extra"]["lazy items"] = _get_lazyitems_from_request(request)
-        if not "cookies" in event["extra"]:
+        if "cookies" not in event["extra"]:
             event["extra"]["cookies"] = _get_cookies_from_request(request)
-        if not "form" in event["extra"]:
+        if "form" not in event["extra"]:
             event["extra"]["form"] = _get_form_from_request(request)
-        if not "request" in event["extra"]:
+        if "request" not in event["extra"]:
             event["extra"]["request"] = _get_request_from_request(request)
         user_info = _get_user_from_request(request)
-        if not "user" in event["extra"]:
+        if "user" not in event["extra"]:
             event["extra"]["user"] = user_info
-        if not "user" in event:
+        if "user" not in event:
             event["user"] = user_info
 
     return event
@@ -180,6 +180,7 @@ def before_send(event, hint):
         return _before_send(event, hint)
     except KeyError:
         logging.warning("Could not extract data from request", exc_info=True)
+
 
 if not sentry_disable:
     if not sentry_dsn:
@@ -192,7 +193,7 @@ if not sentry_disable:
     integrations = []
     if sentry_integrations:
         integrations = []
-        for i in sentry_integrations.split(','):
+        for i in sentry_integrations.split(","):
             klass = _load_class(i)
             integrations.append(klass())
 
@@ -203,7 +204,7 @@ if not sentry_disable:
         attach_stacktrace=True,
         debug=False,
         environment=sentry_environment,
-        integrations=integrations
+        integrations=integrations,
     )
 
     configuration = getConfiguration()
@@ -255,15 +256,14 @@ if not sentry_disable:
 else:
     logging.info("Sentry integration disabled b/c SENTRY_DISABLE is set")
 
+
 @adapter(IPubFailure)
 def errorRaisedSubscriber(event):
     if _ignore_error(event):
         return
 
-    exc_info = (
-        sys.exc_info()
-    )
-    
+    exc_info = sys.exc_info()
+
     with sentry_sdk.push_scope() as scope:
         scope.set_extra("other", _get_other_from_request(event.request))
         scope.set_extra("lazy items", _get_lazyitems_from_request(event.request))
