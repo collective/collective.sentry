@@ -59,7 +59,7 @@ setup(
         "Tracker": "https://github.com/collective/collective.sentry/issues",
     },
     zip_safe=False,
-    install_requires=["setuptools", "sentry-sdk"],
+    install_requires=["setuptools", "sentry-sdk", "Zope", "plone.api"],
     entry_points="""
       # -*- Entry points -*-
       [z3c.autoinclude.plugin]
