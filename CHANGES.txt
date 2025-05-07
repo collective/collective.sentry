@@ -24,7 +24,7 @@ Changelog
 0.3.0 (2022-10-06)
 ------------------
 
-- Add enviroment var to disable sentry integration. [krissik]
+- Add environment var to disable sentry integration. [krissik]
 
 
 0.2.6 (2022-07-28)
@@ -35,7 +35,7 @@ Changelog
 0.2.5 (2022/07/26)
 ------------------
 
-- Add optional environment parameter for Sentry integrations ("SENTRY_INTEGRATIONS", comma seperated list)
+- Add optional environment parameter for Sentry integrations ("SENTRY_INTEGRATIONS", comma separated list)
   [2silver]
 - Ensure all exceptions which should be ignored are actually ignored before sending them.
   [thomasmassmann]
