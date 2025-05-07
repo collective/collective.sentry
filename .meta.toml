@@ -4,3 +4,11 @@
 [meta]
 template = "default"
 commit-id = "2.0.1.dev0"
+
+[github]
+jobs = [
+   "qa",
+   "dependencies",
+   "release_ready",
+   "circular",
+]
