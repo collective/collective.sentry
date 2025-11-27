@@ -2,7 +2,6 @@
 collective.sentry
 """
 
-from setuptools import find_packages
 from setuptools import setup
 
 import os
@@ -48,7 +47,8 @@ setup(
     author="Andreas Jung",
     author_email="info@zopyx.com",
     license="GPL",
-    packages=find_packages(exclude=["ez_setup"]),
+    packages=["collective", "collective.sentry"],
+    package_dir={"": "src"},
     namespace_packages=[
         "collective",
     ],
