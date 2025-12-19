@@ -51,7 +51,11 @@ def _ignore_error(event):
         except (AttributeError, KeyError, IndexError):
             error_log = None
 
-    if error_log and exc_info[0].__name__ in error_log._ignored_exceptions:
+    name = False
+    if exc_info and exc_info[0]:
+        name = exc_info[0].__name__
+
+    if error_log and name and name in error_log._ignored_exceptions:
         return True
 
     return False
