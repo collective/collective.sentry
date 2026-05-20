@@ -37,8 +37,7 @@ setup(
         "Programming Language :: Python :: 3.13",
         "Programming Language :: Python :: 3.14",
         "Framework :: Plone",
-        "Framework :: Plone :: 6.0",
-        "Framework :: Plone :: 6.1",
+        "Framework :: Plone :: 6.2",
         "Framework :: Zope",
         "Framework :: Zope :: 5",
         "Topic :: Software Development :: Libraries :: Python Modules",
@@ -47,11 +46,6 @@ setup(
     author="Andreas Jung",
     author_email="info@zopyx.com",
     license="GPL",
-    packages=["collective", "collective.sentry"],
-    package_dir={"": "src"},
-    namespace_packages=[
-        "collective",
-    ],
     include_package_data=True,
     project_urls={
         "Code": "https://github.com/collective/collective.sentry",
