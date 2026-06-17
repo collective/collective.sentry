@@ -21,7 +21,6 @@ import sentry_sdk
 import sentry_sdk.utils as sentry_utils
 import sys
 
-
 sentry_dsn = os.environ.get("SENTRY_DSN")
 
 sentry_project = os.environ.get("SENTRY_PROJECT")

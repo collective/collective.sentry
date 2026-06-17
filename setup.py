@@ -22,7 +22,7 @@ setup(
     version=version,
     description="Sentry integration with Plone 5.2/Zope 4",
     long_description=long_description,
-    python_requires=">=3.9",
+    python_requires=">=3.10",
     # Get more strings from
     # http://www.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -30,15 +30,14 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: GNU General Public License (GPL)",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Framework :: Plone",
-        "Framework :: Plone :: 6.0",
-        "Framework :: Plone :: 6.1",
+        "Framework :: Plone :: 6.2",
         "Framework :: Zope",
         "Framework :: Zope :: 5",
         "Topic :: Software Development :: Libraries :: Python Modules",
@@ -47,18 +46,13 @@ setup(
     author="Andreas Jung",
     author_email="info@zopyx.com",
     license="GPL",
-    packages=["collective", "collective.sentry"],
-    package_dir={"": "src"},
-    namespace_packages=[
-        "collective",
-    ],
     include_package_data=True,
     project_urls={
         "Code": "https://github.com/collective/collective.sentry",
         "Tracker": "https://github.com/collective/collective.sentry/issues",
     },
     zip_safe=False,
-    install_requires=["setuptools", "sentry-sdk>2.27.0", "Zope", "plone.api"],
+    install_requires=["sentry-sdk>2.27.0", "Zope", "plone.api"],
     entry_points="""
       # -*- Entry points -*-
       [z3c.autoinclude.plugin]
