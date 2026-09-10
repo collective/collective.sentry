@@ -21,7 +21,6 @@ import sentry_sdk
 import sentry_sdk.utils as sentry_utils
 import socket
 import sys
-import traceback
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
 
@@ -51,7 +50,9 @@ if traces_sample_rate:
     try:
         traces_sample_rate = float(traces_sample_rate)
     except TypeError:
-        logging.warning('Invalid env value for SENTRY_TRACES_SAMPLE_RATE, defaulting to None')
+        logging.warning(
+            "Invalid env value for SENTRY_TRACES_SAMPLE_RATE, defaulting to None"
+        )
         traces_sample_rate = None
 
 
@@ -230,7 +231,7 @@ if not sentry_disable:
         sample_rate=sample_rate,
         enable_tracing=enable_tracing,
         traces_sample_rate=traces_sample_rate,
-        server_name = sentry_hostname
+        server_name=sentry_hostname,
     )
 
     configuration = getConfiguration()
@@ -267,7 +268,7 @@ if not sentry_disable:
             sample_rate=sample_rate,
             enable_tracing=enable_tracing,
             traces_sample_rate=traces_sample_rate,
-            server_name = sentry_hostname
+            server_name=sentry_hostname,
         )
 
         configuration = getConfiguration()
