@@ -1,6 +1,7 @@
-global-exclude *pyc
-include *.cfg *.rst *.in *.txt *.md 
+include *.rst *.txt *.md
+graft docs *
+graft src
 
+global-exclude *pyc
+recursive-exclude news *
 recursive exclude __pycache__  *.pyc
-recursive-include docs *
-recursive-include collective *

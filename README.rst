@@ -6,8 +6,10 @@ Sentry integration with Zope.
 Requirements
 ------------
 
-* Plone 5.2, 5.1 (tested)
-* Python 3.6+, 2.7 (tested)
+* Plone 6.2 (tested)
+* Python 3.10+
+
+For older Plone/Python versions, use version up to ``0.3.2``.
 
 Installation
 ------------
@@ -33,12 +35,12 @@ environment variable `SENTRY_PROJECT`.  This allows you introduce an additional
 tag for filtering, if needed.
 
 
-Set `SENTRY_ENVIRONMENT` to differentiate between environments e.g. staging vs production 
+Set `SENTRY_ENVIRONMENT` to differentiate between environments e.g. staging vs production
 (https://docs.sentry.io/enriching-error-data/environments/)
 
 Set `SENTRY_RELEASE` to sent release information to sentry. (https://docs.sentry.io/workflow/releases/)
 
-Set ´SENTRY_INTEGRATIONS` (comma seperated) for different Integrations. (https://docs.sentry.io/platforms/python/configuration/integrations/)
+Set `SENTRY_INTEGRATIONS` (comma separated) for different Integrations. (https://docs.sentry.io/platforms/python/configuration/integrations/)
 
 Optional activation
 ---------------------

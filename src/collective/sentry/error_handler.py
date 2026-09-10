@@ -3,15 +3,6 @@
 # Integration of Zope (4) with Sentry
 # The code below is heavily based on the raven.contrib. zope module
 
-import logging
-import os
-import socket
-import sys
-import traceback
-import importlib
-
-import sentry_sdk
-import sentry_sdk.utils as sentry_utils
 from AccessControl.SecurityManagement import getSecurityManager
 from AccessControl.users import nobody
 from App.config import getConfiguration
@@ -22,6 +13,15 @@ from zope.component import adapter
 from zope.globalrequest import getRequest
 from ZPublisher.HTTPRequest import _filterPasswordFields
 from ZPublisher.interfaces import IPubFailure
+
+import importlib
+import logging
+import os
+import sentry_sdk
+import sentry_sdk.utils as sentry_utils
+import socket
+import sys
+import traceback
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
 
@@ -69,7 +69,11 @@ def _ignore_error(event):
         except (AttributeError, KeyError, IndexError):
             error_log = None
 
-    if error_log and exc_info[0].__name__ in error_log._ignored_exceptions:
+    name = False
+    if exc_info and exc_info[0]:
+        name = exc_info[0].__name__
+
+    if error_log and name and name in error_log._ignored_exceptions:
         return True
 
     return False
@@ -132,7 +136,7 @@ def _get_request_from_request(request):
 
     body_pos = request.stdin.tell()
     request.stdin.seek(0)
-    body = request.stdin.read()
+    request.stdin.read()
     request.stdin.seek(body_pos)
     http = dict(
         headers=headers,
@@ -163,7 +167,7 @@ def _load_class(full_class_string):
 
 def _before_send(event, hint):
     """
-     Inject Plone/Zope specific information (based on raven.contrib.zope)
+    Inject Plone/Zope specific information (based on raven.contrib.zope)
     """
     if _ignore_error(event):
         return
@@ -174,20 +178,20 @@ def _before_send(event, hint):
         # We have no request if event is captured by errorRaisedSubscriber (see below)
         # so extra information must be set there.
         # If the event is send by pythons logging module we set extra info here.
-        if not "other" in event["extra"]:
+        if "other" not in event["extra"]:
             event["extra"]["other"] = _get_other_from_request(request)
-        if not "lazy items" in event["extra"]:
+        if "lazy items" not in event["extra"]:
             event["extra"]["lazy items"] = _get_lazyitems_from_request(request)
-        if not "cookies" in event["extra"]:
+        if "cookies" not in event["extra"]:
             event["extra"]["cookies"] = _get_cookies_from_request(request)
-        if not "form" in event["extra"]:
+        if "form" not in event["extra"]:
             event["extra"]["form"] = _get_form_from_request(request)
-        if not "request" in event["extra"]:
+        if "request" not in event["extra"]:
             event["extra"]["request"] = _get_request_from_request(request)
         user_info = _get_user_from_request(request)
-        if not "user" in event["extra"]:
+        if "user" not in event["extra"]:
             event["extra"]["user"] = user_info
-        if not "user" in event:
+        if "user" not in event:
             event["user"] = user_info
 
     return event
@@ -199,6 +203,7 @@ def before_send(event, hint):
     except KeyError:
         logging.warning("Could not extract data from request", exc_info=True)
 
+
 if not sentry_disable:
     if not sentry_dsn:
         msg = "Environment variable SENTRY_DSN not configured"
@@ -207,40 +212,40 @@ if not sentry_disable:
         else:
             sentry_utils.MAX_STRING_LENGTH = sentry_max_length
 
+    integrations = []
+    if sentry_integrations:
         integrations = []
-        if sentry_integrations:
-            integrations = []
-            for i in sentry_integrations.split(','):
-                klass = _load_class(i)
-                integrations.append(klass())
+        for i in sentry_integrations.split(","):
+            klass = _load_class(i)
+            integrations.append(klass())
 
-        sentry_sdk.init(
-            sentry_dsn,
-            max_breadcrumbs=50,
-            before_send=before_send,
-            attach_stacktrace=True,
-            debug=False,
-            environment=sentry_environment,
-            integrations=integrations,
-            sample_rate=sample_rate,
-            enable_tracing=enable_tracing,
-            traces_sample_rate=traces_sample_rate,
-            server_name = sentry_hostname
-        )
+    sentry_sdk.init(
+        sentry_dsn,
+        max_breadcrumbs=50,
+        before_send=before_send,
+        attach_stacktrace=True,
+        debug=False,
+        environment=sentry_environment,
+        integrations=integrations,
+        sample_rate=sample_rate,
+        enable_tracing=enable_tracing,
+        traces_sample_rate=traces_sample_rate,
+        server_name = sentry_hostname
+    )
 
-        configuration = getConfiguration()
-        tags = {}
-        instancehome = configuration.instancehome
-        tags["instance_name"] = instancehome.rsplit(os.path.sep, 1)[-1]
+    configuration = getConfiguration()
+    tags = {}
+    instancehome = configuration.instancehome
+    tags["instance_name"] = instancehome.rsplit(os.path.sep, 1)[-1]
 
-        with sentry_sdk.configure_scope() as scope:
-            for k, v in tags.items():
-                scope.set_tag(k, v)
-            if sentry_project:
-                scope.set_tag("project", sentry_project)
+    with sentry_sdk.configure_scope() as scope:
+        for k, v in tags.items():
+            scope.set_tag(k, v)
+        if sentry_project:
+            scope.set_tag("project", sentry_project)
 
-        logging.info("Sentry integration enabled")
-        ignore_logger("Zope.SiteErrorLog")
+    logging.info("Sentry integration enabled")
+    ignore_logger("Zope.SiteErrorLog")
 
     if sentry_dsn:
         if sentry_max_length:
@@ -281,15 +286,14 @@ if not sentry_disable:
 else:
     logging.info("Sentry integration disabled b/c SENTRY_DISABLE is set")
 
+
 @adapter(IPubFailure)
 def errorRaisedSubscriber(event):
     if _ignore_error(event):
         return
 
-    exc_info = (
-        sys.exc_info()
-    )
-    
+    exc_info = sys.exc_info()
+
     with sentry_sdk.push_scope() as scope:
         scope.set_extra("other", _get_other_from_request(event.request))
         scope.set_extra("lazy items", _get_lazyitems_from_request(event.request))
