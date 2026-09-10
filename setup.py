@@ -46,6 +46,14 @@ setup(
     author="Andreas Jung",
     author_email="info@zopyx.com",
     license="GPL",
+    # Declared explicitly rather than left to setuptools auto-discovery: an
+    # auto-discovered src-layout gets a bare sys.path .pth entry, and a PEP 420
+    # portion reached that way is discarded as soon as any other installed
+    # collective.* distribution ships a collective/__init__.py. Naming the
+    # package produces an import-hook editable install instead, which resolves
+    # collective.sentry directly and is immune to that shadowing.
+    packages=["collective.sentry"],
+    package_dir={"": "src"},
     include_package_data=True,
     project_urls={
         "Code": "https://github.com/collective/collective.sentry",
