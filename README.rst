@@ -3,67 +3,80 @@ collective.sentry
 
 Sentry integration with Zope.
 
-Requirements
-------------
+Quick start (zero config)
+-------------------------
 
-* Plone 6.2 (tested)
-* Python 3.10+
+Install ``collective.sentry`` alongside your Zope/Plone instance and set::
 
-For older Plone/Python versions, use version up to ``0.3.2``.
+    SENTRY_DSN=https://<key>@<host>/<project-id>
 
-Installation
-------------
+Optional environment variables:
 
-Add `collective.sentry` to your buildout and re-run buildout.
+- ``SENTRY_ENVIRONMENT`` — the environment tag (e.g. ``production``).
+- ``SENTRY_PROJECT`` — set as tag ``project`` on every event.
+- ``SENTRY_DISABLE`` — set to disable Sentry entirely.
+- ``SENTRY_INTEGRATIONS`` — comma-separated dotted names of extra
+  sentry-sdk integration classes (instantiated without arguments).
+- ``SENTRY_MAX_LENGTH`` — maps to sentry-sdk's ``max_value_length``;
+  unset keeps the SDK default.
+- ``SENTRY_OPTIONAL`` — deprecated, ignored (a missing DSN just disables
+  reporting).
 
-Configuration
--------------
+In Plone the package is picked up automatically (z3c.autoinclude). On
+plain Zope, import the package once at startup, e.g. from the WSGI
+module::
 
-Configure the Sentry DSN by setting the environment variable `SENTRY_DSN` inside your shell configuration or using buildout::
+    import collective.sentry  # noqa: F401
 
-    [instance]
-    environment-vars +=
-        SENTRY_DSN https://......
+Own initialization (filtering etc.)
+-----------------------------------
 
-Supplementary information logged in Sentry
-------------------------------------------
+The env-var bootstrap steps aside when the SDK is already initialized, so
+you can call ``sentry_sdk.init()`` yourself — for example to filter
+scanner noise with ``before_send``, which since 2.0 belongs to you::
 
-`collective.sentry` will create automatically a Sentry tag `instance_name`
-which is derived from the buildout part name of the related instance.  An
-additional tag `project` can be configured (optional) if you set the
-environment variable `SENTRY_PROJECT`.  This allows you introduce an additional
-tag for filtering, if needed.
+    import sentry_sdk
+    from collective.sentry import ZopeIntegration
 
+    def drop_scanner_noise(event, hint):
+        # your filtering logic
+        return event
 
-Set `SENTRY_ENVIRONMENT` to differentiate between environments e.g. staging vs production
-(https://docs.sentry.io/enriching-error-data/environments/)
+    sentry_sdk.init(
+        dsn="...",
+        integrations=[ZopeIntegration()],
+        before_send=drop_scanner_noise,
+        ignore_errors=[KeyboardInterrupt],
+    )
 
-Set `SENTRY_RELEASE` to sent release information to sentry. (https://docs.sentry.io/workflow/releases/)
+Run this before Zope loads the package ZCML (policy package module level,
+or a paste filter in ``wsgi.ini``).
 
-Set `SENTRY_INTEGRATIONS` (comma separated) for different Integrations. (https://docs.sentry.io/platforms/python/configuration/integrations/)
+What gets reported
+------------------
 
-Optional activation
----------------------
-By default, if you install `collective.sentry` along you eggs, the instance start will crash if you do not configure `SENTRY_DSN`.
-But sometime, you have multiple environments where you want that the product to be loaded, without doing anything under the hood (same conf for dev & prod, but no sentry on dev).
-To enable this behavior, add `SENTRY_OPTIONAL=1` to your environment variables.
+Unhandled publisher exceptions (via ``IPubFailure``) and ``logging``
+errors, enriched per request with form data, cookies, lazy items, request
+info and the authenticated user (email included when the user has PAS
+properties, i.e. always in Plone). Passwords are filtered. Exception
+types listed as ignored in the site's ``error_log`` are not reported.
 
-Repository
-----------
+Migrating from 1.x
+------------------
 
-https://github.com/collective/collective.sentry
-
-Licence
--------
-
-- GPL2 - GNU Public License 2
-- based on `raven.contrib.zope`: BSD
-
-
-Author
-------
-
-ZOPYX/Andreas Jung, info@zopyx.com
-
-`collective.sentry` has been developed as part of a Plone 5.2 migration project and it
-sponsored by the University Gent.
+- ``before_send`` is no longer occupied by this package; wrappers around
+  ``collective.sentry.error_handler.before_send`` can be replaced by a
+  plain ``before_send`` passed to your own ``sentry_sdk.init()``.
+- ``collective.sentry.error_handler`` is deprecated (works, warns).
+- ``SENTRY_INTEGRATIONS`` works again (it was silently broken since
+  1.x/2022).
+- ``SENTRY_MAX_LENGTH`` now only applies when explicitly set.
+- ``plone.api`` is no longer a dependency; plain Zope 5 is supported.
+- Transaction names are now the request path — review Sentry alert rules
+  that filter on transaction.
+- The deprecated ``error_handler.before_send`` shim only enriches — the
+  ``error_log`` ignore check moved to the capture path (relevant only if
+  you call the shim directly).
+- ``extra["request"]["headers"]`` now contains proper header names
+  (``HTTP_*`` transformed, non-header environ keys dropped, sensitive
+  headers filtered) instead of the raw WSGI environ.
