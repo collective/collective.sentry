@@ -1,5 +1,8 @@
 from collective.sentry.tests.utils import CapturingTransport
 from collective.sentry.tests.utils import reset_sentry
+from zope.component import getGlobalSiteManager
+from ZPublisher import WSGIPublisher
+from ZPublisher.interfaces import IPubFailure
 
 import sentry_sdk
 import unittest
@@ -11,8 +14,20 @@ DSN = "https://x@example.com/1"
 class TestBootstrap(unittest.TestCase):
     def setUp(self):
         reset_sentry()
+        self._orig_publish_module = WSGIPublisher.publish_module
 
     def tearDown(self):
+        # initialize_from_environ() runs ZopeIntegration.setup_once(), which
+        # wraps WSGIPublisher.publish_module and registers on_pub_failure as
+        # an IPubFailure handler. Undo both, or a later test/layer that
+        # checks the "_sentry_wrapped" guard thinks setup already happened
+        # and skips it -- while the handler registration itself doesn't
+        # survive a zope.testing.cleanup.cleanUp() (e.g. at the start of the
+        # functional test layer), leaving no handler registered at all.
+        WSGIPublisher.publish_module = self._orig_publish_module
+        from collective.sentry.capture import on_pub_failure
+
+        getGlobalSiteManager().unregisterHandler(on_pub_failure, (IPubFailure,))
         reset_sentry()
 
     def _call(self, **env):

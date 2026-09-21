@@ -57,10 +57,22 @@ def reset_sentry():
     """Fresh SDK state per test: no active client, integrations re-runnable."""
     from sentry_sdk.integrations import _installed_integrations
     from sentry_sdk.integrations import _processed_integrations
+    from sentry_sdk.scope import global_event_processors
 
     sentry_sdk.get_global_scope().clear()
     _installed_integrations.clear()
     _processed_integrations.clear()
+    # Clearing _processed_integrations makes setup_once() re-run on the next
+    # init(). For integrations that register through
+    # add_global_event_processor (e.g. DedupeIntegration, ArgvIntegration,
+    # ModulesIntegration, StdlibIntegration) that list is process-global and
+    # append-only, so without clearing it here every test that re-inits
+    # piles on another copy of each processor. Harmless alone, but
+    # DedupeIntegration's processor marks an exception "seen" on its first
+    # pass and drops it as a duplicate on its second -- so two or more
+    # accumulated copies silently swallow every subsequent captured
+    # exception across the whole process.
+    global_event_processors.clear()
     # set_client(None) installs a NonRecordingClient -> is_active() False,
     # which the bootstrap's deployer-wins check relies on.
     sentry_sdk.get_global_scope().set_client(None)

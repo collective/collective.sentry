@@ -1,0 +1,25 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    >
+
+  <browser:page
+      name="sentry-test-boom"
+      for="*"
+      class=".views.BoomView"
+      permission="zope2.View"
+      />
+  <browser:page
+      name="sentry-test-notfound"
+      for="*"
+      class=".views.NotFoundView"
+      permission="zope2.View"
+      />
+  <browser:page
+      name="sentry-test-log"
+      for="*"
+      class=".views.LogView"
+      permission="zope2.View"
+      />
+
+</configure>
