@@ -21,3 +21,22 @@ check_manifest_ignores = """
 
 [tox]
 test_matrix = {"6.2" = ["*"]}
+test_environment_variables = """
+    SENTRY_DISABLE=1
+"""
+envlist_lines = """
+    zope
+"""
+extra_lines = """
+[testenv:zope]
+description = unit tests against plain Zope, without Plone installed
+use_develop = true
+skip_install = false
+extras =
+set_env = SENTRY_DISABLE=1
+deps =
+    zope.testrunner
+    Products.SiteErrorLog
+commands =
+    zope-testrunner --test-path={toxinidir}/src -s collective.sentry -m 'collective\\.sentry\\.tests\\.(test_extraction|test_capture|test_integration|test_bootstrap|test_bbb)' {posargs}
+"""
