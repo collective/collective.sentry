@@ -46,3 +46,38 @@ class TestBasicCapture(FunctionalBase):
             self.assertIn(key, event["extra"])
         self.assertEqual(event["user"]["id"], SITE_OWNER_NAME)
         self.assertIn("sentry-test-boom", event["transaction"])
+
+
+class TestIgnoredExceptions(FunctionalBase):
+    def test_error_log_ignored_exception_sends_nothing(self):
+        error_log = self.portal.error_log
+        # NotFound is in Plone's default ignored list; assert instead of
+        # assuming, so the test fails loudly if defaults change.
+        self.assertIn("NotFound", error_log._ignored_exceptions)
+        transaction.commit()
+        browser = self._browser()
+        browser.open(self.portal.absolute_url() + "/@@sentry-test-notfound")
+        self.assertEqual(self._events(), [])
+
+
+class TestLoggingPath(FunctionalBase):
+    def test_log_error_event_is_request_enriched(self):
+        browser = self._browser()
+        browser.open(self.portal.absolute_url() + "/@@sentry-test-log?marker=abc")
+        events = self._events()
+        self.assertEqual(len(events), 1)
+        event = events[0]
+        self.assertEqual(event["logentry"]["message"], "sentry-test log")
+        self.assertIn("sentry-test-log", event["extra"]["request"]["url"])
+        self.assertEqual(event["extra"]["form"]["marker"], "'abc'")
+
+
+class TestScopeIsolation(FunctionalBase):
+    def test_no_scope_bleed_between_requests(self):
+        browser = self._browser()
+        browser.open(self.portal.absolute_url() + "/@@sentry-test-boom?first=1")
+        browser.open(self.portal.absolute_url() + "/@@sentry-test-boom")
+        events = self._events()
+        self.assertEqual(len(events), 2)
+        self.assertIn("first", events[0]["extra"]["form"])
+        self.assertNotIn("first", events[1]["extra"]["form"])
