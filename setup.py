@@ -14,7 +14,7 @@ def read(*rnames):
 version = "1.0.1.dev0"
 
 long_description = (
-    read("README.rst") + "\n" + read("CHANGES.txt") + "\n" + read("CONTRIBUTORS.txt")
+    read("README.rst") + "\n" + read("CHANGES.rst") + "\n" + read("CONTRIBUTORS.rst")
 )
 
 setup(

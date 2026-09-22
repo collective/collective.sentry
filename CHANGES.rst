@@ -1,3 +1,6 @@
+Changelog
+=========
+
 1.0.0 (2026-06-17)
 ------------------
 
@@ -21,3 +24,80 @@ Internal:
 - Update configuration files.
   Move to src-layout.
   [plone devs]
+
+
+0.3.3 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
+0.3.2 (2023-11-07)
+------------------
+
+- Fix SENTRY_MAX_LENGTH default value again.
+  [Lunga001]
+
+0.3.1 (2023-10-11)
+------------------
+
+- Fix SENTRY_MAX_LENGTH default value.
+  [folix-01]
+
+
+0.3.0 (2022-10-06)
+------------------
+
+- Add environment var to disable sentry integration. [krissik]
+
+
+0.2.6 (2022-07-28)
+------------------
+- Fix a problem on `errorRaisedSubscriber` function that was missing the `exc_info` variable. [thomasmassmann]
+
+
+0.2.5 (2022/07/26)
+------------------
+
+- Add optional environment parameter for Sentry integrations ("SENTRY_INTEGRATIONS", comma separated list)
+  [2silver]
+- Ensure all exceptions which should be ignored are actually ignored before sending them.
+  [thomasmassmann]
+
+
+0.2.4 (2020/09/07)
+------------------
+
+- Ignore exceptions that are ignored in the root Zope error_log.
+  [maurits]
+
+
+0.2.3 (2020/08/05)
+------------------
+- Fix error handling on zope site root
+  [krissik]
+
+0.2.2 (2020/07/13)
+------------------
+- Add check with error_log ignored_exceptions before send exceptions to sentry
+  [eikichi18]
+
+0.2.1 (2020/07/08)
+------------------
+- Add SENTRY_ENVIRONMENT option.
+  [fulv]
+
+0.2.0 (2019/11/28)
+------------------
+- Add optional environment parameter to set max length of stacktrace ("SENTRY_MAX_LENGTH", default is 512)
+  [Thokas]
+
+0.1.7 (2019/10/21)
+------------------
+- Make collective.sentry configuration optional (do not load if no **SENTRY_DSN**)
+  [kiorky]
+
+0.1 (2019/08/15)
+----------------
+
+- initial release
