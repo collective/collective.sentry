@@ -13,6 +13,12 @@ jobs = [
    "circular",
 ]
 
+[pyproject]
+check_manifest_ignores = """
+    "PLAN-*.md",
+    "SPEC-*.md",
+"""
+
 [tox]
 test_matrix = {"6.2" = ["*"]}
 skip_test_extra = true
