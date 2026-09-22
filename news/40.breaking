@@ -1,0 +1,6 @@
+Rewrite as a proper sentry_sdk ZopeIntegration: per-request isolation
+scope with lazy enrichment, before_send freed for deployers, plone.api
+dependency dropped (plain Zope 5 supported), error_handler deprecated as
+BBB shim. SENTRY_MAX_LENGTH now only applies when explicitly set;
+SENTRY_OPTIONAL is deprecated and ignored.
+[jensens]

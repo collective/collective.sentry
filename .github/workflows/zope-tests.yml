@@ -1,0 +1,22 @@
+name: Zope-only tests
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  zope:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    - uses: astral-sh/setup-uv@v10.1.0
+      with:
+        enable-cache: true
+        cache-dependency-glob: |
+          setup.*
+          tox.ini
+        python-version: "3.13"
+    - name: Test
+      run: uvx --with tox-uv tox -e zope

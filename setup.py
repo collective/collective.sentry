@@ -11,7 +11,7 @@ def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
 
-version = "1.0.1.dev0"
+version = "2.0.0.dev0"
 
 long_description = (
     read("README.rst") + "\n" + read("CHANGES.rst") + "\n" + read("CONTRIBUTORS.rst")
@@ -20,7 +20,7 @@ long_description = (
 setup(
     name="collective.sentry",
     version=version,
-    description="Sentry integration with Plone 5.2/Zope 4",
+    description="Sentry integration for Zope 5 and Plone 6",
     long_description=long_description,
     python_requires=">=3.10",
     # Get more strings from
@@ -31,7 +31,6 @@ setup(
         "License :: OSI Approved :: GNU General Public License (GPL)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
@@ -52,7 +51,8 @@ setup(
         "Tracker": "https://github.com/collective/collective.sentry/issues",
     },
     zip_safe=False,
-    install_requires=["sentry-sdk>2.27.0", "Zope", "plone.api"],
+    install_requires=["sentry-sdk>2.27.0", "Zope"],
+    extras_require={"test": ["plone.app.testing"]},
     entry_points="""
       # -*- Entry points -*-
       [z3c.autoinclude.plugin]

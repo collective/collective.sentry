@@ -1,12 +1,8 @@
-<configure
-    xmlns="http://namespaces.zope.org/zope"
-    xmlns:browser="http://namespaces.zope.org/browser"
-    xmlns:five="http://namespaces.zope.org/five"
-    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
-    xmlns:i18n="http://namespaces.zope.org/i18n"
-    xmlns:plone="http://namespaces.plone.org/plone"
-    xmlns:pp="http://namespaces.zopyx.com/pp"
-    >
+<configure xmlns="http://namespaces.zope.org/zope">
 
-  <subscriber handler=".error_handler.errorRaisedSubscriber" />
+  <!-- Intentionally empty since 2.0: the IPubFailure handler is registered
+       programmatically by ZopeIntegration.setup_once(). This file is kept
+       so the z3c.autoinclude entry point keeps importing the package
+       (which triggers the env-var bootstrap in __init__). -->
+
 </configure>

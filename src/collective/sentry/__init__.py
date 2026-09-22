@@ -1,3 +1,6 @@
-"""Main product initializer"""
+"""collective.sentry: sentry_sdk integration for Zope/Plone."""
 
-import collective.sentry.error_handler  # noqa: F401
+from collective.sentry.bootstrap import initialize_from_environ
+from collective.sentry.integration import ZopeIntegration  # noqa: F401
+
+initialize_from_environ()
