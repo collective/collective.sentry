@@ -1,3 +1,33 @@
+2.0.0 (2026-09-23)
+------------------
+
+Breaking changes:
+
+
+- Rewrite as a proper sentry_sdk ZopeIntegration: per-request isolation
+  scope with lazy enrichment, before_send freed for deployers, plone.api
+  dependency dropped (plain Zope 5 supported), error_handler deprecated as
+  BBB shim. SENTRY_MAX_LENGTH now only applies when explicitly set;
+  SENTRY_OPTIONAL is deprecated and ignored.
+  [jensens] (#40)
+
+
+New features:
+
+
+- Env-var bootstrap yields to a deployer's own sentry_sdk.init();
+  SENTRY_INTEGRATIONS works again (silently broken since 2022, #40).
+  [jensens] (#40)
+
+
+Tests:
+
+
+- Add unit and Plone functional test suites, plus a Zope-only tox env and
+  CI job proving the package runs without Plone.
+  [jensens] (#40)
+
+
 Changelog
 =========
 

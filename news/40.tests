@@ -1,3 +1,0 @@
-Add unit and Plone functional test suites, plus a Zope-only tox env and
-CI job proving the package runs without Plone.
-[jensens]
