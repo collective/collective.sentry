@@ -28,7 +28,6 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: GNU General Public License (GPL)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -44,7 +43,7 @@ setup(
     keywords="policy",
     author="Andreas Jung",
     author_email="info@zopyx.com",
-    license="GPL",
+    license="GPL-2.0-only",
     include_package_data=True,
     project_urls={
         "Code": "https://github.com/collective/collective.sentry",
