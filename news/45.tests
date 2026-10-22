@@ -1,0 +1,4 @@
+Run the functional tests through the standard plone.testing browser, which
+binds publish_module like make_wsgi_app does, and drop the LateBindingBrowser
+workaround.
+[szakitibi]
