@@ -15,11 +15,16 @@ class TestSetupOnce(unittest.TestCase):
         reset_sentry()
         self._orig_pubevents = WSGIPublisher.transaction_pubevents
         self.calls = []
+        self.swallow = False
 
         @contextlib.contextmanager
         def stub_pubevents(request, response, tm=None):
             self.calls.append(sentry_sdk.get_isolation_scope())
-            yield
+            try:
+                yield
+            except ValueError:
+                if not self.swallow:
+                    raise
 
         WSGIPublisher.transaction_pubevents = stub_pubevents
 
@@ -67,4 +72,32 @@ class TestSetupOnce(unittest.TestCase):
         self.assertIsNot(inner, outer)
         self.assertIs(inside, inner)
         self.assertEqual(inner._transaction, "/plone/some-view")
+        self.assertIs(sentry_sdk.get_isolation_scope(), outer)
+
+    def test_each_attempt_gets_its_own_scope(self):
+        self._init()
+        for path in ("/first", "/second"):
+            with WSGIPublisher.transaction_pubevents(self._request(path), None):
+                pass
+        first, second = self.calls
+        self.assertIsNot(first, second)
+        self.assertEqual(first._transaction, "/first")
+        self.assertEqual(second._transaction, "/second")
+
+    def test_reraised_exception_propagates(self):
+        self._init()
+        outer = sentry_sdk.get_isolation_scope()
+        with self.assertRaises(ValueError):
+            with WSGIPublisher.transaction_pubevents(self._request(), None):
+                raise ValueError("boom")
+        self.assertIs(sentry_sdk.get_isolation_scope(), outer)
+
+    def test_handled_exception_stays_swallowed(self):
+        # transaction_pubevents does not re-raise when an exception view
+        # rendered the response; the wrapper must not change that.
+        self.swallow = True
+        self._init()
+        outer = sentry_sdk.get_isolation_scope()
+        with WSGIPublisher.transaction_pubevents(self._request(), None):
+            raise ValueError("handled")
         self.assertIs(sentry_sdk.get_isolation_scope(), outer)
