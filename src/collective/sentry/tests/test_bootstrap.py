@@ -14,17 +14,17 @@ DSN = "https://x@example.com/1"
 class TestBootstrap(unittest.TestCase):
     def setUp(self):
         reset_sentry()
-        self._orig_publish_module = WSGIPublisher.publish_module
+        self._orig_pubevents = WSGIPublisher.transaction_pubevents
 
     def tearDown(self):
         # initialize_from_environ() runs ZopeIntegration.setup_once(), which
-        # wraps WSGIPublisher.publish_module and registers on_pub_failure as
+        # wraps WSGIPublisher.transaction_pubevents and registers on_pub_failure as
         # an IPubFailure handler. Undo both, or a later test/layer that
         # checks the "_sentry_wrapped" guard thinks setup already happened
         # and skips it -- while the handler registration itself doesn't
         # survive a zope.testing.cleanup.cleanUp() (e.g. at the start of the
         # functional test layer), leaving no handler registered at all.
-        WSGIPublisher.publish_module = self._orig_publish_module
+        WSGIPublisher.transaction_pubevents = self._orig_pubevents
         from collective.sentry.capture import on_pub_failure
 
         getGlobalSiteManager().unregisterHandler(on_pub_failure, (IPubFailure,))

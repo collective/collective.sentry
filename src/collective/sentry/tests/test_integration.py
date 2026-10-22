@@ -1,9 +1,11 @@
 from collective.sentry.tests.utils import CapturingTransport
+from collective.sentry.tests.utils import FakeRequest
 from collective.sentry.tests.utils import reset_sentry
 from zope.component import getGlobalSiteManager
 from ZPublisher import WSGIPublisher
 from ZPublisher.interfaces import IPubFailure
 
+import contextlib
 import sentry_sdk
 import unittest
 
@@ -11,18 +13,23 @@ import unittest
 class TestSetupOnce(unittest.TestCase):
     def setUp(self):
         reset_sentry()
-        self._orig = WSGIPublisher.publish_module
+        self._orig_pubevents = WSGIPublisher.transaction_pubevents
         self.calls = []
+        self.swallow = False
 
-        def stub_publish(environ, start_response, **kw):
-            scope = sentry_sdk.get_isolation_scope()
-            self.calls.append(scope)
-            return [b"ok"]
+        @contextlib.contextmanager
+        def stub_pubevents(request, response, tm=None):
+            self.calls.append(sentry_sdk.get_isolation_scope())
+            try:
+                yield
+            except ValueError:
+                if not self.swallow:
+                    raise
 
-        WSGIPublisher.publish_module = stub_publish
+        WSGIPublisher.transaction_pubevents = stub_pubevents
 
     def tearDown(self):
-        WSGIPublisher.publish_module = self._orig
+        WSGIPublisher.transaction_pubevents = self._orig_pubevents
         from collective.sentry.capture import on_pub_failure
 
         getGlobalSiteManager().unregisterHandler(on_pub_failure, (IPubFailure,))
@@ -38,13 +45,16 @@ class TestSetupOnce(unittest.TestCase):
             integrations=[ZopeIntegration()],
         )
 
-    def test_wraps_publish_module_once(self):
+    def _request(self, path="/plone/some-view"):
+        return FakeRequest(environ={"PATH_INFO": path, "REQUEST_METHOD": "GET"})
+
+    def test_wraps_transaction_pubevents_once(self):
         self._init()
-        wrapped = WSGIPublisher.publish_module
+        wrapped = WSGIPublisher.transaction_pubevents
         self.assertTrue(getattr(wrapped, "_sentry_wrapped", False))
         reset_sentry()  # allows setup_once to run again
         self._init()
-        self.assertIs(WSGIPublisher.publish_module, wrapped)
+        self.assertIs(WSGIPublisher.transaction_pubevents, wrapped)
 
     def test_registers_pub_failure_handler(self):
         from collective.sentry.capture import on_pub_failure
@@ -56,9 +66,38 @@ class TestSetupOnce(unittest.TestCase):
     def test_request_gets_isolated_scope_and_transaction(self):
         self._init()
         outer = sentry_sdk.get_isolation_scope()
-        environ = {"PATH_INFO": "/plone/some-view", "REQUEST_METHOD": "GET"}
-        body = WSGIPublisher.publish_module(environ, lambda *a: None)
-        self.assertEqual(body, [b"ok"])
+        with WSGIPublisher.transaction_pubevents(self._request(), None):
+            inside = sentry_sdk.get_isolation_scope()
         inner = self.calls[0]
         self.assertIsNot(inner, outer)
+        self.assertIs(inside, inner)
         self.assertEqual(inner._transaction, "/plone/some-view")
+        self.assertIs(sentry_sdk.get_isolation_scope(), outer)
+
+    def test_each_attempt_gets_its_own_scope(self):
+        self._init()
+        for path in ("/first", "/second"):
+            with WSGIPublisher.transaction_pubevents(self._request(path), None):
+                pass
+        first, second = self.calls
+        self.assertIsNot(first, second)
+        self.assertEqual(first._transaction, "/first")
+        self.assertEqual(second._transaction, "/second")
+
+    def test_reraised_exception_propagates(self):
+        self._init()
+        outer = sentry_sdk.get_isolation_scope()
+        with self.assertRaises(ValueError):
+            with WSGIPublisher.transaction_pubevents(self._request(), None):
+                raise ValueError("boom")
+        self.assertIs(sentry_sdk.get_isolation_scope(), outer)
+
+    def test_handled_exception_stays_swallowed(self):
+        # transaction_pubevents does not re-raise when an exception view
+        # rendered the response; the wrapper must not change that.
+        self.swallow = True
+        self._init()
+        outer = sentry_sdk.get_isolation_scope()
+        with WSGIPublisher.transaction_pubevents(self._request(), None):
+            raise ValueError("handled")
+        self.assertIs(sentry_sdk.get_isolation_scope(), outer)

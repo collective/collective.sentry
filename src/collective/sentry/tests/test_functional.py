@@ -1,8 +1,8 @@
-from collective.sentry.tests.plone_layer import LateBindingBrowser
 from collective.sentry.tests.plone_layer import SENTRY_FUNCTIONAL_TESTING
 from collective.sentry.tests.utils import captured_events
 from plone.app.testing import SITE_OWNER_NAME
 from plone.app.testing import SITE_OWNER_PASSWORD
+from plone.testing.zope import Browser
 
 import sentry_sdk
 import transaction
@@ -19,7 +19,10 @@ class FunctionalBase(unittest.TestCase):
         transaction.commit()
 
     def _browser(self, auth=True):
-        browser = LateBindingBrowser(self.layer["app"])
+        # The standard testbrowser calls the ``publish_module`` it imported
+        # at module load, like ``Zope2.Startup.run.make_wsgi_app`` does for
+        # a real WSGI server, so it never sees a later patch of that name.
+        browser = Browser(self.layer["app"])
         browser.handleErrors = True
         browser.raiseHttpErrors = False
         if auth:
