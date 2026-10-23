@@ -1,3 +1,26 @@
+2.0.1 (2026-10-23)
+------------------
+
+Bug fixes:
+
+
+- Fix events from a running instance missing all request data (form, cookies,
+  request info, user, transaction name) and carrying breadcrumbs of earlier
+  requests: wrap ZPublisher.WSGIPublisher.transaction_pubevents instead of
+  publish_module, which Zope's make_wsgi_app binds before this package is
+  loaded.
+  [szakitibi] (#45)
+
+
+Tests:
+
+
+- Run the functional tests through the standard plone.testing browser, which
+  binds publish_module like make_wsgi_app does, and drop the LateBindingBrowser
+  workaround.
+  [szakitibi] (#45)
+
+
 2.0.0 (2026-09-23)
 ------------------
 

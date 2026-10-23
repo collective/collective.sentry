@@ -1,6 +1,0 @@
-Fix events from a running instance missing all request data (form, cookies,
-request info, user, transaction name) and carrying breadcrumbs of earlier
-requests: wrap ZPublisher.WSGIPublisher.transaction_pubevents instead of
-publish_module, which Zope's make_wsgi_app binds before this package is
-loaded.
-[szakitibi]
