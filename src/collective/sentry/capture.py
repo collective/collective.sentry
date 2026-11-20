@@ -1,24 +1,37 @@
 """Exception capture for the Zope publisher. Zope-only — no Plone imports."""
 
 from zope.component import adapter
+from zope.component.hooks import getSite
 from ZPublisher.interfaces import IPubFailure
 
 import sentry_sdk
 
 
-def should_ignore(exc_type, request):
-    """True if the site's error_log lists this exception type as ignored.
+def _find_error_log(request):
+    """The error_log whose settings apply to this request.
 
-    Resolves the nearest error_log by acquisition from request.PARENTS[0]:
-    inside a Plone site that is the portal's tool, on plain Zope the root
-    Products.SiteErrorLog instance.
+    First the error_log of the site the request traversed into (the Plone
+    portal). request.PARENTS[0] alone is not enough there: below a view,
+    such as an image scale below @@images, it is that view, which cannot
+    acquire error_log; and when traversal fails, PARENTS is still in
+    traversal order, so PARENTS[0] is the Zope root.
+
+    Without a site (plain Zope), acquire it from request.PARENTS[0], which
+    finds the root Products.SiteErrorLog instance.
     """
-    if exc_type is None:
-        return False
+    error_log = getattr(getSite(), "error_log", None)
+    if error_log is not None:
+        return error_log
     parents = getattr(request, "PARENTS", None) or []
     context = parents[0] if parents else None
-    error_log = getattr(context, "error_log", None) if context is not None else None
-    ignored = getattr(error_log, "_ignored_exceptions", ())
+    return getattr(context, "error_log", None) if context is not None else None
+
+
+def should_ignore(exc_type, request):
+    """True if the site's error_log lists this exception type as ignored."""
+    if exc_type is None:
+        return False
+    ignored = getattr(_find_error_log(request), "_ignored_exceptions", ())
     return exc_type.__name__ in ignored
 
 
