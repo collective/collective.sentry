@@ -2,6 +2,7 @@ from collective.sentry.tests.utils import captured_events
 from collective.sentry.tests.utils import CapturingTransport
 from collective.sentry.tests.utils import FakeRequest
 from collective.sentry.tests.utils import reset_sentry
+from unittest import mock
 
 import sentry_sdk
 import unittest
@@ -57,6 +58,46 @@ class TestShouldIgnore(unittest.TestCase):
         from collective.sentry.capture import should_ignore
 
         self.assertFalse(should_ignore(None, _request()))
+
+
+class SiteErrorLog:
+    _ignored_exceptions = ("Intercepted",)
+
+
+class FakeSite:
+    error_log = SiteErrorLog()
+
+
+class TestShouldIgnoreWithSite(unittest.TestCase):
+    """A site's error_log is used even when PARENTS[0] cannot acquire one."""
+
+    def _should_ignore(self, exc_type, request, site):
+        from collective.sentry.capture import should_ignore
+
+        with mock.patch("collective.sentry.capture.getSite", return_value=site):
+            return should_ignore(exc_type, request)
+
+    def test_site_error_log_used_without_parents(self):
+        class Intercepted(Exception):
+            pass
+
+        self.assertTrue(self._should_ignore(Intercepted, _request(False), FakeSite()))
+
+    def test_site_error_log_wins_over_parents(self):
+        class Intercepted(Exception):
+            pass
+
+        class NotFound(Exception):
+            pass
+
+        self.assertTrue(self._should_ignore(Intercepted, _request(), FakeSite()))
+        self.assertFalse(self._should_ignore(NotFound, _request(), FakeSite()))
+
+    def test_site_without_error_log_falls_back_to_parents(self):
+        class NotFound(Exception):
+            pass
+
+        self.assertTrue(self._should_ignore(NotFound, _request(), object()))
 
 
 class TestOnPubFailure(unittest.TestCase):

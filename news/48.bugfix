@@ -1,0 +1,5 @@
+Respect the site's ignored exceptions again for errors on objects that cannot
+acquire error_log, such as image scales, downloads and static resources, and
+for errors during traversal. 2.0 sent these to Sentry, including the
+plone.app.caching Intercepted exception behind every 304 response.
+[jladage]

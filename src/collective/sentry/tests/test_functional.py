@@ -63,6 +63,54 @@ class TestIgnoredExceptions(FunctionalBase):
         self.assertEqual(self._events(), [])
 
 
+class TestIgnoredExceptionsBelowViews(FunctionalBase):
+    """The portal's ignored list also applies when PARENTS[0] cannot acquire
+    error_log, like a view in front of an image scale or download (#48)."""
+
+    def setUp(self):
+        super().setUp()
+        error_log = self.portal.error_log
+        props = error_log.getProperties()
+        self._orig_ignored = props["ignored_exceptions"]
+        error_log.setProperties(
+            props["keep_entries"],
+            props["copy_to_zlog"],
+            self._orig_ignored + ("SentryTestIgnored",),
+        )
+        # Only the portal ignores it, so a lookup that ends at the Zope root
+        # is caught as well.
+        root_error_log = getattr(self.layer["app"], "error_log", None)
+        self.assertNotIn(
+            "SentryTestIgnored", getattr(root_error_log, "_ignored_exceptions", ())
+        )
+        transaction.commit()
+
+    def tearDown(self):
+        error_log = self.portal.error_log
+        props = error_log.getProperties()
+        error_log.setProperties(
+            props["keep_entries"], props["copy_to_zlog"], self._orig_ignored
+        )
+        transaction.commit()
+
+    def _open(self, path):
+        self._browser().open(self.portal.absolute_url() + path)
+        return self._events()
+
+    def test_ignored_on_view_of_portal(self):
+        self.assertEqual(self._open("/@@sentry-test-traverse"), [])
+
+    def test_ignored_on_object_below_view(self):
+        self.assertEqual(self._open("/@@sentry-test-traverse/sub"), [])
+
+    def test_ignored_during_traversal(self):
+        self.assertEqual(self._open("/@@sentry-test-traverse/fail"), [])
+
+    def test_not_ignored_is_still_captured(self):
+        events = self._open("/@@sentry-test-boom")
+        self.assertEqual(len(events), 1)
+
+
 class TestLoggingPath(FunctionalBase):
     def test_log_error_event_is_request_enriched(self):
         browser = self._browser()

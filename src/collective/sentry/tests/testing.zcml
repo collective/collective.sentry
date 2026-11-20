@@ -21,5 +21,11 @@
       class=".views.LogView"
       permission="zope2.View"
       />
+  <browser:page
+      name="sentry-test-traverse"
+      for="*"
+      class=".views.TraverseView"
+      permission="zope2.View"
+      />
 
 </configure>
