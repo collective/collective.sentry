@@ -22,18 +22,19 @@ setup(
     version=version,
     description="Sentry integration for Zope 5 and Plone 6",
     long_description=long_description,
-    python_requires=">=3.10",
+    long_description_content_type="text/x-rst",
+    python_requires=">=3.11",
     # Get more strings from
     # http://www.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
         "Programming Language :: Python :: 3.14",
+        "Programming Language :: Python :: 3.15",
         "Framework :: Plone",
         "Framework :: Plone :: 6.2",
         "Framework :: Zope",
@@ -43,7 +44,7 @@ setup(
     keywords="policy",
     author="Andreas Jung",
     author_email="info@zopyx.com",
-    license="GPL-2.0-only",
+    license_expression="GPL-2.0-only",
     include_package_data=True,
     project_urls={
         "Code": "https://github.com/collective/collective.sentry",
