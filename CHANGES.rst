@@ -1,3 +1,38 @@
+3.0.0 (2026-11-23)
+------------------
+
+Breaking changes:
+
+
+- Drop support for Python 3.10, which is out of support, and add Python 3.15.
+  [jladage] (#50)
+
+
+Bug fixes:
+
+
+- Respect the site's ignored exceptions again for errors on objects that cannot
+  acquire error_log, such as image scales, downloads and static resources, and
+  for errors during traversal. 2.0 sent these to Sentry, including the
+  plone.app.caching Intercepted exception behind every 304 response.
+  [jladage] (#48)
+
+
+Internal:
+
+
+- Update the configuration with plone/meta 2.13.1 and add a Makefile for common
+  tasks.
+  [jladage] (#50)
+
+
+Tests:
+
+
+- Add functional tests for ignored exceptions below a view and during traversal.
+  [jladage] (#48)
+
+
 2.0.1 (2026-10-23)
 ------------------
 
