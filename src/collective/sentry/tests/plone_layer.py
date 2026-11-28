@@ -6,7 +6,9 @@ from collective.sentry.tests.utils import reset_sentry
 from plone.app.testing import FunctionalTesting
 from plone.app.testing import PLONE_FIXTURE
 from plone.app.testing import PloneSandboxLayer
+from sentry_sdk.integrations.logging import LoggingIntegration
 
+import logging
 import sentry_sdk
 
 
@@ -22,7 +24,14 @@ class SentryLayer(PloneSandboxLayer):
         sentry_sdk.init(
             dsn="https://x@example.com/1",
             transport=self["sentry_transport"],
-            integrations=[ZopeIntegration()],
+            integrations=[
+                ZopeIntegration(),
+                LoggingIntegration(
+                    breadcrumb_level=logging.INFO,
+                    level=None,
+                    event_level=logging.ERROR,
+                ),
+            ],
         )
 
     def tearDownZope(self, app):

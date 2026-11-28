@@ -37,6 +37,8 @@ scanner noise with ``before_send``, which since 2.0 belongs to you::
 
     import sentry_sdk
     from collective.sentry import ZopeIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
+    import logging
 
     def drop_scanner_noise(event, hint):
         # your filtering logic
@@ -44,7 +46,14 @@ scanner noise with ``before_send``, which since 2.0 belongs to you::
 
     sentry_sdk.init(
         dsn="...",
-        integrations=[ZopeIntegration()],
+        integrations=[
+            ZopeIntegration(),
+            LoggingIntegration(
+                breadcrumb_level=logging.INFO,
+                level=None,
+                event_level=logging.ERROR,
+            ),
+        ],
         before_send=drop_scanner_noise,
         ignore_errors=[KeyboardInterrupt],
     )

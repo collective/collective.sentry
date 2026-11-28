@@ -3,7 +3,7 @@
 from collective.sentry.capture import on_pub_failure
 from collective.sentry.extraction import request_event_processor
 from sentry_sdk.integrations import Integration
-from sentry_sdk.integrations.logging import ignore_logger
+from sentry_sdk.integrations.logging import ignore_logger_for_events
 from zope.component import provideHandler
 from ZPublisher import WSGIPublisher
 from ZPublisher.interfaces import IPubFailure
@@ -47,4 +47,4 @@ class ZopeIntegration(Integration):
         provideHandler(on_pub_failure, (IPubFailure,))
         # The publisher logs failures to Zope.SiteErrorLog; without this the
         # logging integration would report every error twice.
-        ignore_logger("Zope.SiteErrorLog")
+        ignore_logger_for_events("Zope.SiteErrorLog")

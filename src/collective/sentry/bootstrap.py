@@ -2,6 +2,7 @@
 
 from App.config import getConfiguration
 from collective.sentry.integration import ZopeIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 import importlib
 import logging
@@ -46,7 +47,14 @@ def initialize_from_environ(environ=None):
         logger.info("SENTRY_DSN not set, Sentry reporting disabled")
         return False
 
-    integrations = [ZopeIntegration()]
+    # Sentry 3 does not enable logging automatically. Keep the pre-3.x
+    # behavior: INFO breadcrumbs and ERROR events, but no Sentry logs.
+    integrations = [
+        ZopeIntegration(),
+        LoggingIntegration(
+            breadcrumb_level=logging.INFO, level=None, event_level=logging.ERROR
+        ),
+    ]
     raw = environ.get("SENTRY_INTEGRATIONS", "")
     for dotted in filter(None, (part.strip() for part in raw.split(","))):
         integrations.append(_load_integration(dotted)())

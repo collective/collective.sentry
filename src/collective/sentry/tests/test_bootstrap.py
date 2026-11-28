@@ -62,6 +62,13 @@ class TestBootstrap(unittest.TestCase):
         self.assertEqual(client.options["environment"], "testing")
         self.assertIsNotNone(client.get_integration(ZopeIntegration))
 
+    def test_initializes_with_error_log_capture(self):
+        from sentry_sdk.integrations.logging import LoggingIntegration
+
+        self._call(SENTRY_DSN=DSN)
+        integration = sentry_sdk.get_client().get_integration(LoggingIntegration)
+        self.assertIsNotNone(integration)
+
     def test_max_length_only_when_set(self):
         self._call(SENTRY_DSN=DSN)
         default_len = sentry_sdk.get_client().options["max_value_length"]
