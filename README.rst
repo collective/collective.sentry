@@ -69,6 +69,8 @@ errors, enriched per request with form data, cookies, lazy items, request
 info and the authenticated user (email included when the user has PAS
 properties, i.e. always in Plone). Passwords are filtered. Exception
 types listed as ignored in the site's ``error_log`` are not reported.
+Sensitive headers in the custom request extra are always filtered, even
+if the SDK's ``data_collection`` settings permit them.
 
 Migrating from 1.x
 ------------------
