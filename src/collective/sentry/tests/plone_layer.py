@@ -1,14 +1,13 @@
 """plone.app.testing layer with a capturing Sentry client."""
 
+from collective.sentry.bootstrap import _logging_integration
 from collective.sentry.integration import ZopeIntegration
 from collective.sentry.tests.utils import CapturingTransport
 from collective.sentry.tests.utils import reset_sentry
 from plone.app.testing import FunctionalTesting
 from plone.app.testing import PLONE_FIXTURE
 from plone.app.testing import PloneSandboxLayer
-from sentry_sdk.integrations.logging import LoggingIntegration
 
-import logging
 import sentry_sdk
 
 
@@ -26,11 +25,7 @@ class SentryLayer(PloneSandboxLayer):
             transport=self["sentry_transport"],
             integrations=[
                 ZopeIntegration(),
-                LoggingIntegration(
-                    breadcrumb_level=logging.INFO,
-                    level=None,
-                    event_level=logging.ERROR,
-                ),
+                _logging_integration(),
             ],
         )
 

@@ -3,7 +3,6 @@
 from collective.sentry.capture import on_pub_failure
 from collective.sentry.extraction import request_event_processor
 from sentry_sdk.integrations import Integration
-from sentry_sdk.integrations.logging import ignore_logger_for_events
 from zope.component import provideHandler
 from ZPublisher import WSGIPublisher
 from ZPublisher.interfaces import IPubFailure
@@ -11,6 +10,14 @@ from ZPublisher.interfaces import IPubFailure
 import contextlib
 import functools
 import sentry_sdk
+
+# sentry_sdk 2.x compatibility
+try:
+    from sentry_sdk.integrations.logging import ignore_logger_for_events
+except ImportError:
+    from sentry_sdk.integrations.logging import (
+        ignore_logger as ignore_logger_for_events,
+    )
 
 
 class ZopeIntegration(Integration):

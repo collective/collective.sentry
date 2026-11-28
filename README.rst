@@ -58,6 +58,11 @@ scanner noise with ``before_send``, which since 2.0 belongs to you::
         ignore_errors=[KeyboardInterrupt],
     )
 
+The ``LoggingIntegration`` example above uses sentry-sdk 3.x options.
+With older 2.x releases, use
+``LoggingIntegration(level=logging.INFO, event_level=logging.ERROR)``
+instead.
+
 Run this before Zope loads the package ZCML (policy package module level,
 or a paste filter in ``wsgi.ini``).
 

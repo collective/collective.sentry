@@ -1,14 +1,42 @@
 from collective.sentry.tests.utils import CapturingTransport
 from collective.sentry.tests.utils import reset_sentry
+from unittest import mock
 from zope.component import getGlobalSiteManager
 from ZPublisher import WSGIPublisher
 from ZPublisher.interfaces import IPubFailure
 
+import logging
 import sentry_sdk
 import unittest
 import warnings
 
 DSN = "https://x@example.com/1"
+
+
+class TestLoggingIntegration(unittest.TestCase):
+    def test_sdk_2_uses_level_for_breadcrumbs(self):
+        from collective.sentry.bootstrap import _logging_integration
+
+        with (
+            mock.patch("collective.sentry.bootstrap.version", return_value="2.27.0"),
+            mock.patch("collective.sentry.bootstrap.LoggingIntegration") as integration,
+        ):
+            _logging_integration()
+        integration.assert_called_once_with(
+            level=logging.INFO, event_level=logging.ERROR
+        )
+
+    def test_sdk_3_uses_breadcrumb_level(self):
+        from collective.sentry.bootstrap import _logging_integration
+
+        with (
+            mock.patch("collective.sentry.bootstrap.version", return_value="3.0.0"),
+            mock.patch("collective.sentry.bootstrap.LoggingIntegration") as integration,
+        ):
+            _logging_integration()
+        integration.assert_called_once_with(
+            breadcrumb_level=logging.INFO, level=None, event_level=logging.ERROR
+        )
 
 
 class TestBootstrap(unittest.TestCase):
