@@ -1,5 +1,6 @@
 """plone.app.testing layer with a capturing Sentry client."""
 
+from collective.sentry.bootstrap import _logging_integration
 from collective.sentry.integration import ZopeIntegration
 from collective.sentry.tests.utils import CapturingTransport
 from collective.sentry.tests.utils import reset_sentry
@@ -22,7 +23,10 @@ class SentryLayer(PloneSandboxLayer):
         sentry_sdk.init(
             dsn="https://x@example.com/1",
             transport=self["sentry_transport"],
-            integrations=[ZopeIntegration()],
+            integrations=[
+                ZopeIntegration(),
+                _logging_integration(),
+            ],
         )
 
     def tearDownZope(self, app):

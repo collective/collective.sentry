@@ -2,6 +2,8 @@
 
 from App.config import getConfiguration
 from collective.sentry.integration import ZopeIntegration
+from importlib.metadata import version
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 import importlib
 import logging
@@ -10,6 +12,16 @@ import sentry_sdk
 import warnings
 
 logger = logging.getLogger(__name__)
+
+
+def _logging_integration():
+    if int(version("sentry-sdk").split(".", 1)[0]) < 3:
+        # Older 2.x releases use level for breadcrumbs and do not accept
+        # breadcrumb_level.
+        return LoggingIntegration(level=logging.INFO, event_level=logging.ERROR)
+    return LoggingIntegration(
+        breadcrumb_level=logging.INFO, level=None, event_level=logging.ERROR
+    )
 
 
 def _load_integration(dotted):
@@ -46,7 +58,8 @@ def initialize_from_environ(environ=None):
         logger.info("SENTRY_DSN not set, Sentry reporting disabled")
         return False
 
-    integrations = [ZopeIntegration()]
+    # Sentry 3 does not enable logging automatically.
+    integrations = [ZopeIntegration(), _logging_integration()]
     raw = environ.get("SENTRY_INTEGRATIONS", "")
     for dotted in filter(None, (part.strip() for part in raw.split(","))):
         integrations.append(_load_integration(dotted)())

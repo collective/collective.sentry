@@ -85,9 +85,9 @@ def reset_sentry():
     # logging.Logger.callHandlers to a closure over whatever
     # callHandlers was previously bound to, and never unwraps it. Since we
     # force setup_once() to re-run on every test by clearing
-    # _processed_integrations above, each test that inits with
-    # default_integrations enabled (the default) stacks another closure on
-    # top of the last. Every stacked closure independently re-emits the
+    # _processed_integrations above, each test that explicitly enables
+    # LoggingIntegration stacks another closure on top of the last.
+    # Every stacked closure independently re-emits the
     # log record as an event, so one logger.error() call after N such
     # re-inits produces N duplicate Sentry events. Restore the pristine,
     # unwrapped callHandlers here so each test starts clean.

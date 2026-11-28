@@ -37,6 +37,8 @@ scanner noise with ``before_send``, which since 2.0 belongs to you::
 
     import sentry_sdk
     from collective.sentry import ZopeIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
+    import logging
 
     def drop_scanner_noise(event, hint):
         # your filtering logic
@@ -44,10 +46,22 @@ scanner noise with ``before_send``, which since 2.0 belongs to you::
 
     sentry_sdk.init(
         dsn="...",
-        integrations=[ZopeIntegration()],
+        integrations=[
+            ZopeIntegration(),
+            LoggingIntegration(
+                breadcrumb_level=logging.INFO,
+                level=None,
+                event_level=logging.ERROR,
+            ),
+        ],
         before_send=drop_scanner_noise,
         ignore_errors=[KeyboardInterrupt],
     )
+
+The ``LoggingIntegration`` example above uses sentry-sdk 3.x options.
+With older 2.x releases, use
+``LoggingIntegration(level=logging.INFO, event_level=logging.ERROR)``
+instead.
 
 Run this before Zope loads the package ZCML (policy package module level,
 or a paste filter in ``wsgi.ini``).
@@ -60,6 +74,8 @@ errors, enriched per request with form data, cookies, lazy items, request
 info and the authenticated user (email included when the user has PAS
 properties, i.e. always in Plone). Passwords are filtered. Exception
 types listed as ignored in the site's ``error_log`` are not reported.
+Sensitive headers in the custom request extra are always filtered, even
+if the SDK's ``data_collection`` settings permit them.
 
 Migrating from 1.x
 ------------------

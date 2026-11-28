@@ -27,6 +27,7 @@ test_environment_variables = """
 """
 envlist_lines = """
     zope
+    sentry2.x
 """
 extra_lines = """
 [testenv:zope]
@@ -40,4 +41,17 @@ deps =
     Products.SiteErrorLog
 commands =
     zope-testrunner --test-path={toxinidir}/src -s collective.sentry -m 'collective\\.sentry\\.tests\\.(test_extraction|test_capture|test_integration|test_bootstrap|test_bbb)' {posargs}
+
+[testenv:sentry2.x]
+use_develop = {[base]use_develop}
+skip_install = {[base]skip_install}
+constrain_package_deps = {[base]constrain_package_deps}
+set_env = {[base]set_env}
+deps =
+    {[test_runner]deps}
+    sentry_sdk<3.0.0
+    -c https://dist.plone.org/release/6.2-dev/constraints.txt
+
+commands = {[test_runner]test}
+extras = {[base]extras}
 """

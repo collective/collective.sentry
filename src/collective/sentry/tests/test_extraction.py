@@ -52,7 +52,7 @@ class TestSections(unittest.TestCase):
             }
         )
         info = _get_request_info(req)
-        # No active client -> should_send_default_pii() is False by default.
+        # Custom extra data is filtered independently of SDK data_collection.
         self.assertEqual(info["headers"]["Authorization"], "[Filtered]")
         self.assertEqual(info["headers"]["Cookie"], "[Filtered]")
         self.assertEqual(info["headers"]["User-Agent"], "UA")

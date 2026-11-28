@@ -2,12 +2,11 @@
 
 from AccessControl.SecurityManagement import getSecurityManager
 from AccessControl.users import nobody
-from sentry_sdk.scope import should_send_default_pii
 from zope.globalrequest import getRequest
 from ZPublisher.HTTPRequest import _filterPasswordFields
 
 # Header names as produced by the key[5:].replace("_", "-").title()
-# transform below; filtered out unless PII sending is explicitly enabled.
+# transform below; custom extras bypass the SDK's data_collection filters.
 SENSITIVE_HEADERS = frozenset(
     {
         "Authorization",
@@ -52,7 +51,6 @@ def _get_other(request):
 def _get_request_info(request):
     environ = request.environ
     headers = {}
-    filter_sensitive = not should_send_default_pii()
     for key, value in environ.items():
         if key.startswith("HTTP_"):
             name = key[5:].replace("_", "-").title()
@@ -60,7 +58,7 @@ def _get_request_info(request):
             name = key.replace("_", "-").title()
         else:
             continue
-        if filter_sensitive and name in SENSITIVE_HEADERS:
+        if name in SENSITIVE_HEADERS:
             headers[name] = "[Filtered]"
         else:
             headers[name] = str(value)
